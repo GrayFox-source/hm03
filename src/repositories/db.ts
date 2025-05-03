@@ -1,8 +1,10 @@
 import {MongoClient} from "mongodb";
 import {BlogViewModel} from "../models/BlogViewModel";
 import {PostViewModel} from "../models/PostViewModel";
+import dotenv from 'dotenv'
+dotenv.config()
 
-const mongoURI = process.env.MongoURI || 'mongodb://localhost:27017'
+const mongoURI = process.env.MONGO_URL || 'mongodb://localhost:27017'
 const client = new MongoClient(mongoURI);
 export const db = client.db('platform')
 export const blogsCollection = db.collection<BlogViewModel>('blogs')
