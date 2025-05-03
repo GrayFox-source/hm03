@@ -1,42 +1,38 @@
-import {db} from "../index";
+import {blogsCollection} from "./db";
+import {BlogViewModel} from "../models/BlogViewModel";
 
 
 export const blogsRepository = {
-    getAllBlogs() {
-        return db.blogs
+    async getAllBlogs(): Promise<BlogViewModel[]> {
+        return blogsCollection.find({}).toArray()
     },
-    getBlogByID(id:string) {
-        const findBlog = db.blogs.find(b => b.id === id)
-        return findBlog
-    },
-    createBlog(inputBlogDTO:{name:string, description:string, websiteUrl:string}) {
-        const newBlog = {
-            id: String(+(new Date())),
-            name: inputBlogDTO.name,
-            description: inputBlogDTO.description,
-            websiteUrl: inputBlogDTO.websiteUrl,
-        }
-        db.blogs.push(newBlog)
-        return newBlog
-    },
-    updateBlogByID(updateBlogDTO:{id: string,name:string, description:string, websiteUrl:string}) {
-        const blog = db.blogs.find(b => b.id === updateBlogDTO.id)
+    async getBlogByID(id:string): Promise<BlogViewModel | null> {
+        const blog: BlogViewModel | null = await blogsCollection.findOne({id: id})
         if (blog) {
-            blog.name = updateBlogDTO.name
-            blog.description = updateBlogDTO.description
-            blog.websiteUrl = updateBlogDTO.websiteUrl
             return blog
         } else {
             return null
         }
     },
-    deleteBlogByID(id:string) {
-        for (let i = 0; i < db.blogs.length; i++) {
-            if (db.blogs[i].id === id) {
-                db.blogs.splice(i, 1)
-                return true
-            }
+    async createBlog(inputBlogDTO:{name:string, description:string, websiteUrl:string, isMembership: boolean}): Promise<BlogViewModel> {
+        const newBlog = {
+            id: String(+(new Date())),
+            name: inputBlogDTO.name,
+            description: inputBlogDTO.description,
+            websiteUrl: inputBlogDTO.websiteUrl,
+            createdAt: new Date().toISOString(),
+            isMembership: false
         }
-        return false
+        const result = await blogsCollection.insertOne(newBlog)
+        return newBlog
+    },
+    async updateBlogByID(updateBlogDTO:{id: string,name:string, description:string, websiteUrl:string}): Promise<boolean> {
+        const result = await blogsCollection.updateOne({id: updateBlogDTO.id}, {$set: {name:updateBlogDTO.name,
+            description: updateBlogDTO.description, websiteUrl: updateBlogDTO.websiteUrl}})
+        return result.matchedCount === 1
+    },
+    async deleteBlogByID(id:string): Promise<boolean> {
+        const result = await blogsCollection.deleteOne({id: id})
+        return result.deletedCount === 1
     }
-    }
+}

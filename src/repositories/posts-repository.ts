@@ -1,44 +1,38 @@
-import {db} from "../index";
+import {PostViewModel} from "../models/PostViewModel";
+import {postsCollection} from "./db";
 
 export const PostsRepository = {
-    getAllPosts() {
-        return db.posts
+    async getAllPosts(): Promise<PostViewModel[]> {
+        return postsCollection.find({}).toArray()
     },
-    getPostById(id:string) {
-        const findPost = db.posts.find(p => p.id === id)
-        return findPost
+    async getPostById(id:string): Promise<PostViewModel | null> {
+        const findPost = await postsCollection.findOne({id: id})
+        if (findPost) {
+            return findPost
+        } else {
+            return null
+        }
     },
-    createNewPost(createPostDTO:{title: string, shortDescription: string, content: string, blogId: string}) {
+    async createNewPost(createPostDTO:{title: string, shortDescription: string, content: string, blogId: string}): Promise<PostViewModel> {
         const newPost = {
             id: String(+(new Date())),
             title: createPostDTO.title,
             shortDescription: createPostDTO.shortDescription,
             content: createPostDTO.content,
             blogId: createPostDTO.blogId,
-            blogName: 'string'
+            blogName: 'string',
+            createdAt: new Date().toISOString()
         }
-        db.posts.push(newPost)
+        const result = await postsCollection.insertOne(newPost)
         return newPost
     },
-    updatePostById(updatePostDTO:{id:string, title: string, shortDescription: string, content: string, blogId: string}) {
-        const findPost = db.posts.find(p => p.id === updatePostDTO.id)
-        if (findPost) {
-            findPost.title = updatePostDTO.title
-            findPost.shortDescription = updatePostDTO.shortDescription
-            findPost.content = updatePostDTO.content
-            findPost.blogId = updatePostDTO.blogId
-            return findPost
-        } else {
-            return null
-        }
+    async updatePostById(updatePostDTO:{id:string, title: string, shortDescription: string, content: string, blogId: string}): Promise<boolean> {
+        const updatePost = await postsCollection.updateOne({id: updatePostDTO.id}, {$set: {title: updatePostDTO.title,
+            shortDescription: updatePostDTO.shortDescription, content: updatePostDTO.content, blogId: updatePostDTO.blogId}})
+        return updatePost.matchedCount === 1
     },
-    deletePostById(id:string) {
-        for (let i = 0; i < db.posts.length; i++) {
-            if (db.posts[i].id === id) {
-                db.posts.splice(i, 1)
-                return true
-            }
-            }
-        return false
+    async deletePostById(id:string) {
+        const isDeleted = await postsCollection.deleteOne({id: id})
+        return isDeleted.deletedCount === 1
         }
     }

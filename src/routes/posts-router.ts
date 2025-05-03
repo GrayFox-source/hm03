@@ -11,13 +11,13 @@ import {
 
 export const postsRouter = Router()
 
-postsRouter.get('/', (req: Request, res: Response) => {
-    const allPosts = PostsRepository.getAllPosts()
+postsRouter.get('/', async (req: Request, res: Response) => {
+    const allPosts = await PostsRepository.getAllPosts()
     res.status(200).send(allPosts)
 })
 
-postsRouter.get('/:id', (req: RequestWithParams<{id:string}>, res: Response) => {
-    const findedPost = PostsRepository.getPostById(req.params.id)
+postsRouter.get('/:id', async (req: RequestWithParams<{ id: string }>, res: Response) => {
+    const findedPost = await PostsRepository.getPostById(req.params.id)
     if (findedPost) {
         res.status(200).send(findedPost)
     } else {
@@ -32,10 +32,10 @@ postsRouter.post('/',
     InputPostContentValidation,
     InputPostBlogIDValidation,
     inputValidationMiddleware,
-    (req:RequestWithBody<PostViewModel>, res: Response) => {
-    const newPost = PostsRepository.createNewPost(req.body)
-    res.status(201).send(newPost)
-})
+    async (req: RequestWithBody<PostViewModel>, res: Response) => {
+        const newPost = await PostsRepository.createNewPost(req.body)
+        res.status(201).send(newPost)
+    })
 
 postsRouter.put('/:id',
     authorisedCheckValidator,
@@ -44,22 +44,23 @@ postsRouter.put('/:id',
     InputPostContentValidation,
     InputPostBlogIDValidation,
     inputValidationMiddleware,
-    (req:RequestWithParamsAndBody<{id:string}, PostInputModel>, res: Response) =>  {
-    const updatePost = PostsRepository.updatePostById({id:req.params.id,...req.body})
-    if (updatePost) {
-        res.status(204).send(updatePost)
-    } else {
-        res.send(404);
-    }
-})
+    async (req: RequestWithParamsAndBody<{ id: string }, PostInputModel>, res: Response) => {
+        const updatePost = await PostsRepository.updatePostById({id: req.params.id, ...req.body})
+        if (updatePost) {
+            const post = await PostsRepository.getPostById(req.params.id)
+            res.status(204).send(post)
+        } else {
+            res.send(404);
+        }
+    })
 
 postsRouter.delete('/:id',
     authorisedCheckValidator,
-    (req: RequestWithParams<{id:string}>, res: Response) =>  {
-    const deletePost = PostsRepository.deletePostById(req.params.id)
-    if (deletePost) {
-        res.send(204)
-    } else {
-        res.send(404)
-    }
-})
+    async (req: RequestWithParams<{ id: string }>, res: Response) => {
+        const deletePost = await PostsRepository.deletePostById(req.params.id)
+        if (deletePost) {
+            res.send(204)
+        } else {
+            res.send(404)
+        }
+    })
