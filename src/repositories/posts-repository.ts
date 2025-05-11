@@ -13,16 +13,7 @@ export const PostsRepository = {
             return null
         }
     },
-    async createNewPost(createPostDTO:{title: string, shortDescription: string, content: string, blogId: string}): Promise<PostViewModel> {
-        const newPost = {
-            id: String(+(new Date())),
-            title: createPostDTO.title,
-            shortDescription: createPostDTO.shortDescription,
-            content: createPostDTO.content,
-            blogId: createPostDTO.blogId,
-            blogName: 'string',
-            createdAt: new Date().toISOString()
-        }
+    async createNewPost(newPost: PostViewModel): Promise<PostViewModel> {
         const result = await postsCollection.insertOne(newPost)
         return newPost
     },
