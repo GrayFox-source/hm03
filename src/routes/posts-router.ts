@@ -1,12 +1,13 @@
-import {Router, Request, Response} from "express";
-import {PostsRepository} from "../repositories/posts-repository";
+import {Request, Response, Router} from "express";
 import {RequestWithBody, RequestWithParams, RequestWithParamsAndBody} from "../types";
-import {PostViewModel} from "../models/PostViewModel";
-import {PostInputModel} from "../models/PostInputModel";
+import {PostInputModel} from "../models/Posts/PostInputModel";
 import {
-    authorisedCheckValidator, InputPostBlogIDValidation, InputPostContentValidation,
+    authorisedCheckValidator,
+    InputPostBlogIDValidation,
+    InputPostContentValidation,
     InputPostShortDescriptionValidation,
-    InputPostTitleValidation, inputValidationMiddleware
+    InputPostTitleValidation,
+    inputValidationMiddleware
 } from "../middlewares/input-validation-middleware";
 import {postsService} from "../domain/posts-service";
 
@@ -33,7 +34,7 @@ postsRouter.post('/',
     InputPostContentValidation,
     InputPostBlogIDValidation,
     inputValidationMiddleware,
-    async (req: RequestWithBody<PostViewModel>, res: Response) => {
+    async (req: RequestWithBody<PostInputModel>, res: Response) => {
         const newPost = await postsService.createNewPost(req.body)
         res.status(201).send(newPost)
     })

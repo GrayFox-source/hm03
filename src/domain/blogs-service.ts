@@ -1,18 +1,18 @@
-import {BlogViewModel} from "../models/BlogViewModel";
+import {BlogViewModel} from "../models/Blogs/BlogViewModel";
 import {blogsRepository} from "../repositories/blogs-repository";
 import {IGetWithPagination} from "../repositories/interfaces/get-with-pagination.interface";
 import {BlogPostInputModel} from "../models/BlogPostInputModel";
-import {PostViewModel} from "../models/PostViewModel";
+import {PostViewModel} from "../models/Posts/PostViewModel";
 import {PostsRepository} from "../repositories/posts-repository";
-import {PaginatorPosts} from "../models/Paginator-Posts";
-import {PaginatorBlogs} from "../models/Paginator-Blogs";
+import {PaginatorPosts} from "../models/Posts/Paginator-Posts";
+import {PaginatorBlogs} from "../models/Blogs/Paginator-Blogs";
 
 
 export const blogsService = {
     async getAllBlogs(dto: IGetWithPagination): Promise<PaginatorBlogs> {
         return blogsRepository.getAllBlogs(dto)
     },
-    async getBlogByID(id:string): Promise<BlogViewModel | null> {
+    async getBlogByID(id: string): Promise<BlogViewModel | null> {
         return blogsRepository.getBlogByID(id)
     },
     async getPostsByBlogId(blogId: string, dto: IGetWithPagination): Promise<PaginatorPosts> {
@@ -44,6 +44,7 @@ export const blogsService = {
             createdAt: new Date().toISOString()
         }
         const createdPost = await PostsRepository.createNewPost(newPost);
+        console.log(createdPost)
         return createdPost;
     },
     async updateBlogByID(updateBlogDTO:{id: string,name:string, description:string, websiteUrl:string}): Promise<boolean> {

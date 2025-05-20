@@ -1,4 +1,4 @@
-import {PostViewModel} from "../models/PostViewModel";
+import {PostViewModel} from "../models/Posts/PostViewModel";
 import {PostsRepository} from "../repositories/posts-repository";
 
 export const postsService = {

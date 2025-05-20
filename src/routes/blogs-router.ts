@@ -1,22 +1,20 @@
 import {Request, Response, Router} from "express";
 import {
     RequestWithBody,
-    RequestWithBodyAndQuery,
     RequestWithParams,
-    RequestWithParamsAndBody, RequestWithParamsAndQuery,
+    RequestWithParamsAndBody,
+    RequestWithParamsAndQuery,
     ResponseTyped
 } from "../types";
-import {BlogInputModel} from "../models/BlogInputModel";
+import {BlogInputModel} from "../models/Blogs/BlogInputModel";
 import * as validation from "../middlewares/input-validation-middleware";
 import {inputValidationMiddleware} from "../middlewares/input-validation-middleware";
-import {BlogViewModel} from "../models/BlogViewModel";
+import {BlogViewModel} from "../models/Blogs/BlogViewModel";
 import {blogsService} from "../domain/blogs-service";
-import {PostViewModel} from "../models/PostViewModel";
+import {PostViewModel} from "../models/Posts/PostViewModel";
 import {BlogPostInputModel} from "../models/BlogPostInputModel";
 import {IGetWithPagination} from "../repositories/interfaces/get-with-pagination.interface";
-import {PaginatorPosts} from "../models/Paginator-Posts";
-
-
+import {PaginatorPosts} from "../models/Posts/Paginator-Posts";
 
 
 export const blogsRouter = Router()
@@ -76,6 +74,7 @@ blogsRouter.post(
         const inputData = req.body;
 
         const createdPost = await blogsService.createPostForBlog(blogId, inputData);
+        console.log(createdPost)
 
         if (!createdPost) {
             res.sendStatus(404);
@@ -83,7 +82,6 @@ blogsRouter.post(
         }
 
         res.status(201).send(createdPost);
-        return;
     }
 );
 blogsRouter.put('/:id',
