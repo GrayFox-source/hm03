@@ -1,5 +1,7 @@
 import {PostViewModel} from "../models/Posts/PostViewModel";
-import {PostsRepository} from "../repositories/posts-repository";
+import {PostsRepository} from "../repositories/Posts/posts-repository";
+import {CommentViewModel} from "../models/Comment/CommentViewModel";
+
 
 export const postsService = {
     async getAllPosts(): Promise<PostViewModel[]> {
@@ -26,5 +28,25 @@ export const postsService = {
     },
     async deletePostById(id:string) {
         return await PostsRepository.deletePostById(id)
-    }
+    },
+    async createCommentForPost(commentDTO: {postId: string, content: string, userId: string, userLogin: string}): Promise<CommentViewModel | null> {
+        const findedPost = await PostsRepository.getPostById(commentDTO.postId)
+
+        if (!findedPost) {
+            return null
+        }
+
+        const newComment = {
+            id: String(+(new Date())),
+            content: commentDTO.content,
+            commentatorInfo: {
+                userId: commentDTO.userId,
+                userLogin: commentDTO.userLogin
+            },
+            createdAt: (new Date()).toISOString(),
+        }
+
+        const result = await PostsRepository.createCommentForPost(newComment)
+        return result
+    },
 }

@@ -1,15 +1,17 @@
 import {Request, Response, Router} from "express";
-import {RequestWithBody, RequestWithParams, RequestWithParamsAndBody} from "../types";
-import {PostInputModel} from "../models/Posts/PostInputModel";
+import {RequestWithBody, RequestWithParams, RequestWithParamsAndBody} from "../../types";
+import {PostInputModel} from "../../models/Posts/PostInputModel";
 import {
-    authorisedCheckValidator,
+    authMiddleware,
+    authorisedCheckValidator, CommentContentInputValidation,
     InputPostBlogIDValidation,
     InputPostContentValidation,
     InputPostShortDescriptionValidation,
     InputPostTitleValidation,
     inputValidationMiddleware
-} from "../middlewares/input-validation-middleware";
-import {postsService} from "../domain/posts-service";
+} from "../../middlewares/input-validation-middleware";
+import {postsService} from "../../domain/posts-service";
+import {CommentInputModel} from "../../models/Comment/CommentInputModel";
 
 export const postsRouter = Router()
 
@@ -38,6 +40,19 @@ postsRouter.post('/',
         const newPost = await postsService.createNewPost(req.body)
         res.status(201).send(newPost)
     })
+
+
+postsRouter.post('/:postId/comments',
+    authMiddleware,
+    CommentContentInputValidation,
+    async (req: RequestWithParamsAndBody<{ postId: string }, CommentInputModel>, res: Response) => {
+        const newComment = await postsService.createCommentForPost({postId: req.params.postId, content: req.body.content, userId: req.user!.id, userLogin: req.user!.login})
+        if (!newComment) {
+            res.send(404)
+        }
+        res.status(201).send(newComment)
+    })
+
 
 postsRouter.put('/:id',
     authorisedCheckValidator,

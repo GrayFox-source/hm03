@@ -1,6 +1,6 @@
 import {IGetWithPagination} from "../repositories/interfaces/get-with-pagination.interface";
 import {PaginatorUsers} from "../models/User/Paginator-Users";
-import {usersRepository} from "../repositories/users-repository";
+import {usersRepository} from "../repositories/Users/users-repository";
 import {UserDBModel, UserViewModel} from "../models/User/UserViewModel";
 import {UserInputModel} from "../models/User/UserInputModel";
 import {usersCollection} from "../repositories/db";
@@ -59,6 +59,9 @@ export const usersService = {
     async findUserByLogin(login: string): Promise<UserDBModel | null> {
         const user = await usersCollection.findOne({login});
         return user ? mapUserDBModelToViewModel(user) : null;
+    },
+    async findUserById(id: string): Promise<UserDBModel | null> {
+        return await usersRepository.getUserById(id)
     },
     async _hashPassword(password: string): Promise<string> {
         return bcrypt.hash(password, SALT_ROUNDS);

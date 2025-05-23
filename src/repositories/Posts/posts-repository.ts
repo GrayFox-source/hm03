@@ -1,5 +1,6 @@
-import {PostViewModel} from "../models/Posts/PostViewModel";
-import {postsCollection} from "./db";
+import {PostViewModel} from "../../models/Posts/PostViewModel";
+import {commentsCollection, postsCollection} from "../db";
+import {CommentViewModel} from "../../models/Comment/CommentViewModel";
 
 export const PostsRepository = {
     async getAllPosts(): Promise<PostViewModel[]> {
@@ -25,5 +26,9 @@ export const PostsRepository = {
     async deletePostById(id:string) {
         const isDeleted = await postsCollection.deleteOne({id: id})
         return isDeleted.deletedCount === 1
-        }
+        },
+    async createCommentForPost(dto: CommentViewModel): Promise<CommentViewModel | null> {
+        const result = await commentsCollection.insertOne(dto)
+        return dto
+    },
     }

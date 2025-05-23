@@ -1,10 +1,10 @@
 import {Request, Response, Router} from "express";
-import {RequestWithBody, RequestWithParams} from "../types";
-import {usersService} from "../domain/users-service";
-import {UserInputModel} from "../models/User/UserInputModel";
-import {ErrorWithValidation} from "../models/Classes/ErrorWithValidation";
-import * as validation from "../middlewares/input-validation-middleware";
-import {authorisedCheckValidator, InputUserPasswordValidation} from "../middlewares/input-validation-middleware";
+import {RequestWithBody, RequestWithParams} from "../../types";
+import {usersService} from "../../domain/users-service";
+import {UserInputModel} from "../../models/User/UserInputModel";
+import {ErrorWithValidation} from "../../models/Classes/ErrorWithValidation";
+import * as validation from "../../middlewares/input-validation-middleware";
+import {authorisedCheckValidator, InputUserPasswordValidation} from "../../middlewares/input-validation-middleware";
 
 export const usersRouter = Router()
 

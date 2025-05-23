@@ -1,5 +1,7 @@
 import {body, FieldValidationError, validationResult} from 'express-validator'
 import {NextFunction, Request, Response} from "express";
+import {jwtService} from "../application/jwt/jwtService";
+import {usersService} from "../domain/users-service";
 
 export const inputValidationMiddleware = (req: Request, res: Response, next: NextFunction): void => {
     const errors = validationResult(req);
@@ -35,6 +37,25 @@ export const authorisedCheckValidator = (req: Request, res: Response, next: Next
         }
     }
 };
+
+
+
+export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.headers.authorization) {
+        res.sendStatus(401)
+        return
+    }
+    const token = req.headers.authorization.split(' ')[1]
+    const userId = await jwtService.getIdUserByToken(token)
+    if (userId) {
+        req.user = await usersService.findUserById((userId).toString())
+        next()
+        return
+    }
+    res.sendStatus(401)
+};
+
+
 export const inputNameBlogValidation = body('name').trim().isLength({
     min: 1,
     max: 15
@@ -63,3 +84,5 @@ export const InputPostContentValidation = body('content').trim().isLength({
 export const InputPostBlogIDValidation = body('blogId').isString().withMessage('BlogID must be string')
 
 export const InputUserPasswordValidation = body('password').isLength({min: 6, max: 20}).withMessage('Invalid password')
+
+export const CommentContentInputValidation = body('content').isLength({min: 20, max:300}).withMessage('Invalid content for comment')

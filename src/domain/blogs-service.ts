@@ -1,9 +1,9 @@
 import {BlogViewModel} from "../models/Blogs/BlogViewModel";
-import {blogsRepository} from "../repositories/blogs-repository";
+import {blogsRepository} from "../repositories/Blogs/blogs-repository";
 import {IGetWithPagination} from "../repositories/interfaces/get-with-pagination.interface";
 import {BlogPostInputModel} from "../models/BlogPostInputModel";
 import {PostViewModel} from "../models/Posts/PostViewModel";
-import {PostsRepository} from "../repositories/posts-repository";
+import {PostsRepository} from "../repositories/Posts/posts-repository";
 import {PaginatorPosts} from "../models/Posts/Paginator-Posts";
 import {PaginatorBlogs} from "../models/Blogs/Paginator-Blogs";
 

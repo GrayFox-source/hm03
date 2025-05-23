@@ -1,8 +1,8 @@
-import {blogsCollection, postsCollection} from "./db";
-import {BlogViewModel} from "../models/Blogs/BlogViewModel";
-import {IGetWithPagination} from "./interfaces/get-with-pagination.interface";
-import {PaginatorPosts} from "../models/Posts/Paginator-Posts";
-import {PaginatorBlogs} from "../models/Blogs/Paginator-Blogs";
+import {blogsCollection, postsCollection} from "../db";
+import {BlogViewModel} from "../../models/Blogs/BlogViewModel";
+import {IGetWithPagination} from "../interfaces/get-with-pagination.interface";
+import {PaginatorPosts} from "../../models/Posts/Paginator-Posts";
+import {PaginatorBlogs} from "../../models/Blogs/Paginator-Blogs";
 
 
 export const blogsRepository = {

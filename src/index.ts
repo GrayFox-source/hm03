@@ -1,10 +1,11 @@
 import express, {Request, Response} from 'express';
 import bodyParser from 'body-parser'
-import {blogsRouter} from "./routes/blogs-router";
-import {postsRouter} from "./routes/posts-router";
+import {blogsRouter} from "./routes/Blogs/blogs-router";
+import {postsRouter} from "./routes/Posts/posts-router";
 import {blogsCollection, postsCollection, runDb, usersCollection} from "./repositories/db";
-import {usersRouter} from "./routes/users-router";
-import {authRouter} from "./routes/auth-router";
+import {usersRouter} from "./routes/Users/users-router";
+import {authRouter} from "./routes/Auth/auth-router";
+import {commentsRouter} from "./routes/Comments/comments-router";
 
 export const app = express()
 const PORT = 3003
@@ -17,6 +18,7 @@ app.use('/blogs', blogsRouter)
 app.use('/posts', postsRouter)
 app.use('/users', usersRouter)
 app.use('/auth', authRouter)
+app.use('/comments', commentsRouter)
 
 app.delete('/testing/all-data', async (req: Request, res: Response) => {
     await blogsCollection.deleteMany({})

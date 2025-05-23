@@ -1,7 +1,7 @@
-import {PaginatorUsers} from "../models/User/Paginator-Users";
-import {usersCollection} from "./db";
-import {GetWithPaginationUsers} from "./interfaces/get-with-pagination-users";
-import {UserViewModel} from "../models/User/UserViewModel";
+import {PaginatorUsers} from "../../models/User/Paginator-Users";
+import {usersCollection} from "../db";
+import {GetWithPaginationUsers} from "../interfaces/get-with-pagination-users";
+import {UserDBModel} from "../../models/User/UserViewModel";
 
 
 export const usersRepository = {
@@ -38,8 +38,8 @@ export const usersRepository = {
             items
         }
     },
-    async getUserById(id: string): Promise<UserViewModel | null> {
-        const findedUser: UserViewModel | null = await usersCollection.findOne({id: id})
+    async getUserById(id: string): Promise<UserDBModel | null> {
+        const findedUser: UserDBModel | null = await usersCollection.findOne({id: id})
         if (findedUser) {
             return findedUser
         } else {

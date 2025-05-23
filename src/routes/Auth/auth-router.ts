@@ -1,7 +1,10 @@
 import {Router} from "express";
-import {RequestWithBody} from "../types";
-import {LoginInputModel} from "../models/Login/LoginInputModel";
-import {authService} from "../domain/auth-service";
+import {RequestWithBody} from "../../types";
+import {LoginInputModel} from "../../models/Login/LoginInputModel";
+import {authService} from "../../domain/auth-service";
+import {jwtService} from "../../application/jwt/jwtService";
+import {authMiddleware} from "../../middlewares/input-validation-middleware";
+
 
 export const authRouter = Router();
 
@@ -30,5 +33,14 @@ authRouter.post('/login', async (req: RequestWithBody<LoginInputModel>, res) => 
         return
     }
 
-    res.status(204).send();
+    const token = await jwtService.createJwtForUser(result)
+    res.status(201).send(token);
+
 });
+
+authRouter.get('/me',
+    authMiddleware,
+    async (req, res) =>  {
+    const userInfo = await authService.getUserInfo({email: req.user!.email, login: req.user!.login, userId: req.user!.id})
+    res.status(200).send(userInfo)
+})
