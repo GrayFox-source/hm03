@@ -2,6 +2,7 @@ import {PaginatorUsers} from "../../models/User/Paginator-Users";
 import {usersCollection} from "../db";
 import {GetWithPaginationUsers} from "../interfaces/get-with-pagination-users";
 import {UserDBModel} from "../../models/User/UserViewModel";
+import {ResistrationConfirmationCodeModel} from "../../models/Auth/ResistrationConfirmationCodeModel";
 
 
 export const usersRepository = {
@@ -50,4 +51,21 @@ export const usersRepository = {
         const deleted = await usersCollection.deleteOne({id: id})
         return deleted.deletedCount === 1
     },
+    async updateUserByCode(code: ResistrationConfirmationCodeModel): Promise<boolean> {
+        const updated = await usersCollection.updateOne(
+            {confirmationCode: code.code},
+        {$set: {confirmed: true}})
+        return updated.matchedCount === 1
+    },
+    async getUserByCode(code: ResistrationConfirmationCodeModel): Promise<UserDBModel | null> {
+        const data = await usersCollection.findOne({ confirmationCode: code.code });
+        if (!data) {
+            return null;
+        }
+        if (data.confirmed !== false) {
+            return null;
+        }
+        return data;
+    }
+
 }

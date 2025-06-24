@@ -1,9 +1,14 @@
 import {Router} from "express";
-import {RequestWithBody} from "../../types";
+import {RequestWithBody, RequestWithQuery} from "../../types";
 import {LoginInputModel} from "../../models/Login/LoginInputModel";
 import {authService} from "../../domain/auth-service";
 import {jwtService} from "../../application/jwt/jwtService";
 import {authMiddleware} from "../../middlewares/input-validation-middleware";
+import {RegistrationInputModel} from "../../models/Auth/RegistrationInputModel";
+import {
+    EmailResendingModel,
+    ResistrationConfirmationCodeModel
+} from "../../models/Auth/ResistrationConfirmationCodeModel";
 
 
 export const authRouter = Router();
@@ -43,4 +48,32 @@ authRouter.get('/me',
     async (req, res) =>  {
     const userInfo = await authService.getUserInfo({email: req.user!.email, login: req.user!.login, userId: req.user!.id})
     res.status(200).send(userInfo)
+})
+
+authRouter.post('/registration',
+    async (req: RequestWithBody<RegistrationInputModel>, res) => {
+    const data = await authService.registerUser(req.body)
+    if (typeof data == "boolean") {
+        res.sendStatus(204)
+    } else {
+        res.status(400).send(data)
+    }
+})
+
+authRouter.get('/registration-confirmation', async (req: RequestWithQuery<ResistrationConfirmationCodeModel>, res) => {
+    const data = await authService.userConfirmation({code: req.query.code})
+    if (typeof data === "boolean") {
+        res.sendStatus(204)
+    } else {
+        res.status(400).send(data)
+    }
+})
+
+authRouter.post('/registration-email-resending', async (req: RequestWithBody<EmailResendingModel>, res) => {
+    const data = await authService.emailResending(req.body)
+    if (typeof data === 'boolean') {
+        res.sendStatus(204)
+    } else {
+        res.status(400).send(data)
+    }
 })

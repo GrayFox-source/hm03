@@ -6,6 +6,8 @@ import {UserInputModel} from "../models/User/UserInputModel";
 import {usersCollection} from "../repositories/db";
 import bcrypt from "bcrypt"
 import {ErrorWithValidation} from "../models/Classes/ErrorWithValidation";
+import {ResistrationConfirmationCodeModel} from "../models/Auth/ResistrationConfirmationCodeModel";
+import {ErrorFieldViewModel} from "../models/ErrorFieldViewModel";
 
 const SALT_ROUNDS = 10
 
@@ -14,7 +16,7 @@ export const usersService = {
     async getAllUsers(dto: IGetWithPagination): Promise<PaginatorUsers> {
         return usersRepository.getAllUsers(dto)
     },
-    async createNewUser(body: UserInputModel): Promise<UserViewModel> {
+    async createNewUser(body: UserInputModel, comfirmationCode: string): Promise<UserViewModel> {
         const correctLogin = await usersCollection.findOne({login: body.login})
         const correctEmail = await usersCollection.findOne({email: body.email})
         const errors = []
@@ -38,7 +40,9 @@ export const usersService = {
             login: body.login,
             email: body.email,
             passwordHash,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            confirmed: false,
+            confirmationCode: comfirmationCode
         }
 
         await usersCollection.insertOne(newUser)
@@ -66,6 +70,17 @@ export const usersService = {
     async _hashPassword(password: string): Promise<string> {
         return bcrypt.hash(password, SALT_ROUNDS);
     },
+    async updateUserByCode(code: ResistrationConfirmationCodeModel): Promise<boolean | ErrorFieldViewModel[]> {
+        const findUnconfirmedUser = await usersRepository.getUserByCode(code)
+        const errorField: ErrorFieldViewModel[] = []
+        if (findUnconfirmedUser) {
+            const result = await usersRepository.updateUserByCode(code)
+            return result
+        } else {
+            errorField.push({error: 'Confirmation code already been expired or apply', field: code.code})
+            return errorField
+        }
+    },
 }
 
 function mapUserDBModelToViewModel(dbModel: any): UserDBModel {
@@ -75,5 +90,7 @@ function mapUserDBModelToViewModel(dbModel: any): UserDBModel {
         email: dbModel.email,
         passwordHash: dbModel.passwordHash,
         createdAt: dbModel.createdAt,
+        confirmed: false,
+        confirmationCode: dbModel.confirmationCode
     };
 }
