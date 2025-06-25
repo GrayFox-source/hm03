@@ -51,18 +51,22 @@ export const usersRepository = {
         const deleted = await usersCollection.deleteOne({id: id})
         return deleted.deletedCount === 1
     },
+    async deleteUserByEmail(email: string) {
+        const deleteUser = await usersCollection.deleteOne({email: email})
+        return deleteUser.deletedCount === 1
+    },
     async updateUserByCode(code: ResistrationConfirmationCodeModel): Promise<boolean> {
         const updated = await usersCollection.updateOne(
-            {confirmationCode: code.code},
-        {$set: {confirmed: true}})
+            {"emailConfirmation.confirmationCode": code.code},
+        {$set: {"emailConfirmation.isConfirmed": true}})
         return updated.matchedCount === 1
     },
     async getUserByCode(code: ResistrationConfirmationCodeModel): Promise<UserDBModel | null> {
-        const data = await usersCollection.findOne({ confirmationCode: code.code });
+        const data = await usersCollection.findOne({ "emailConfirmation.confirmationCode": code.code });
         if (!data) {
             return null;
         }
-        if (data.confirmed !== false) {
+        if (data.emailConfirmation.isConfirmed !== false) {
             return null;
         }
         return data;

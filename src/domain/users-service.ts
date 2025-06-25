@@ -8,6 +8,8 @@ import bcrypt from "bcrypt"
 import {ErrorWithValidation} from "../models/Classes/ErrorWithValidation";
 import {ResistrationConfirmationCodeModel} from "../models/Auth/ResistrationConfirmationCodeModel";
 import {ErrorFieldViewModel} from "../models/ErrorFieldViewModel";
+import {add} from 'date-fns'
+import { v4 as uuidv4 } from 'uuid';
 
 const SALT_ROUNDS = 10
 
@@ -36,13 +38,20 @@ export const usersService = {
         const passwordHash = await this._hashPassword(body.password,)
 
         const newUser: UserDBModel = {
-            id: String(+(new Date())),
+            id: uuidv4(),
             login: body.login,
             email: body.email,
             passwordHash,
             createdAt: new Date().toISOString(),
-            confirmed: false,
-            confirmationCode: comfirmationCode
+            emailConfirmation: {
+                confirmationCode: comfirmationCode,
+                expirationDate: add(new Date(), {
+                    hours: 1,
+                    minutes: 3,
+                }),
+                isConfirmed: false
+            },
+
         }
 
         await usersCollection.insertOne(newUser)
@@ -55,6 +64,9 @@ export const usersService = {
     },
     async deleteUserById(id: string): Promise<boolean> {
         return await usersRepository.deleteUserById(id)
+    },
+    async deleteUserByEmail(email: string): Promise<boolean> {
+        return await usersRepository.deleteUserByEmail(email)
     },
     async findUserByEmail(email: string): Promise<UserDBModel | null> {
         const user = await usersCollection.findOne({email});
@@ -73,7 +85,8 @@ export const usersService = {
     async updateUserByCode(code: ResistrationConfirmationCodeModel): Promise<boolean | ErrorFieldViewModel[]> {
         const findUnconfirmedUser = await usersRepository.getUserByCode(code)
         const errorField: ErrorFieldViewModel[] = []
-        if (findUnconfirmedUser) {
+        const currentDate = new Date()
+        if (findUnconfirmedUser && findUnconfirmedUser!.emailConfirmation.expirationDate >= currentDate) {
             const result = await usersRepository.updateUserByCode(code)
             return result
         } else {
@@ -90,7 +103,13 @@ function mapUserDBModelToViewModel(dbModel: any): UserDBModel {
         email: dbModel.email,
         passwordHash: dbModel.passwordHash,
         createdAt: dbModel.createdAt,
-        confirmed: false,
-        confirmationCode: dbModel.confirmationCode
+        emailConfirmation: {
+            confirmationCode: dbModel.confirmationCode,
+            expirationDate: add(new Date(), {
+                hours: 1,
+                minutes: 3,
+            }),
+            isConfirmed: false
+        },
     };
 }

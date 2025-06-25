@@ -11,6 +11,9 @@ export type UserDBModel = {
     email: string;
     passwordHash: string;
     createdAt: string;
-    confirmed: boolean,
-    confirmationCode: string
+    emailConfirmation: {
+        confirmationCode: string,
+        expirationDate: Date,
+        isConfirmed: boolean,
+    }
 };

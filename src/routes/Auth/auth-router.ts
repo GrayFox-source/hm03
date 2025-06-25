@@ -53,7 +53,7 @@ authRouter.get('/me',
 authRouter.post('/registration',
     async (req: RequestWithBody<RegistrationInputModel>, res) => {
     const data = await authService.registerUser(req.body)
-    if (typeof data == "boolean") {
+    if (data === true) {
         res.sendStatus(204)
     } else {
         res.status(400).send(data)

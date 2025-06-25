@@ -71,7 +71,14 @@ export const authService = {
             email: dto.email
         }
         await usersService.createNewUser(newUser, confirmationCode)
-        mailerAdapter.sendMailConfirmationCode(dto.email, confirmationCode)
+        try {
+            await mailerAdapter.sendMailConfirmationCode(dto.email, confirmationCode)
+        } catch (error) {
+            console.error(error)
+            await usersService.deleteUserByEmail(newUser.email)
+            return false
+        }
+
         return true
     },
     async userConfirmation(code: ResistrationConfirmationCodeModel) {
@@ -84,7 +91,7 @@ export const authService = {
             errorField.push({error: 'Have a problem, this user is not existing', field: email.email})
             return errorField
         }
-        const resendingEmailConfirmationCode = await mailerAdapter.sendMailConfirmationCode(email.email, user?.confirmationCode)
+        const resendingEmailConfirmationCode = await mailerAdapter.sendMailConfirmationCode(email.email, user?.emailConfirmation.confirmationCode)
         return true
     }
 }
