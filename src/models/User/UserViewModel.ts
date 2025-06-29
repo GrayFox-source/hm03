@@ -15,5 +15,5 @@ export type UserDBModel = {
         confirmationCode: string,
         expirationDate: Date,
         isConfirmed: boolean,
-    }
+    },
 };

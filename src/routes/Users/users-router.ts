@@ -20,7 +20,8 @@ usersRouter.post('/',
     InputUserPasswordValidation,
     async (req: RequestWithBody<UserInputModel>, res: Response) => {
         try {
-            const user = await usersService.createNewUser(req.body);
+            const confirmationCode = String(+(new Date()))
+            const user = await usersService.createNewUser(req.body, confirmationCode);
             res.status(201).json(user);
         } catch (e) {
             if (e instanceof ErrorWithValidation) {

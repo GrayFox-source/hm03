@@ -4,6 +4,7 @@ import {PostViewModel} from "../models/Posts/PostViewModel";
 import dotenv from 'dotenv'
 import {UserDBModel} from "../models/User/UserViewModel";
 import {CommentViewModel} from "../models/Comment/CommentViewModel";
+import {RefreshTokenDBModel} from "../models/Auth/TokenModel";
 
 dotenv.config()
 
@@ -16,6 +17,8 @@ export const postsCollection = db.collection<PostViewModel>('posts')
 export const usersCollection = db.collection<UserDBModel>('users')
 
 export const commentsCollection = db.collection<CommentViewModel>('comments')
+
+export const refreshTokensCollection = db.collection<RefreshTokenDBModel>('refreshTokens');
 
 
 

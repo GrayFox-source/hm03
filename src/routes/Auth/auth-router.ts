@@ -9,6 +9,8 @@ import {
     EmailResendingModel,
     ResistrationConfirmationCodeModel
 } from "../../models/Auth/ResistrationConfirmationCodeModel";
+import {refreshTokensCollection, usersCollection} from "../../repositories/db";
+
 
 
 export const authRouter = Router();
@@ -38,8 +40,12 @@ authRouter.post('/login', async (req: RequestWithBody<LoginInputModel>, res) => 
         return
     }
 
-    const token = await jwtService.createJwtForUser(result)
-    res.status(201).send(token);
+    const accessToken = await jwtService.createJwtForUser(result)
+    const refreshToken = await jwtService.createRefreshToken(result)
+    res.cookie("refreshToken", refreshToken, {httpOnly: true})
+    console.log(res.cookie("refreshToken", refreshToken, {httpOnly: true}))
+    console.log('ALLO')
+    res.status(201).send(accessToken);
 
 });
 
@@ -75,5 +81,44 @@ authRouter.post('/registration-email-resending', async (req: RequestWithBody<Ema
         res.sendStatus(204)
     } else {
         res.status(400).send(data)
+    }
+})
+
+authRouter.post('/refresh-token', async (req, res) => {
+    const cookie_refresh = req.cookies.refresh_cookie
+    if (!cookie_refresh) {
+        res.status(401).send("Unauthorized")
+    }
+
+    try {
+        const decoded = await jwtService.verifyUser(cookie_refresh)
+        const refreshTokenRecord = await jwtService.refreshTokenRecord(cookie_refresh, decoded.id)
+        if (!refreshTokenRecord) {
+            res.status(401).send('Unauthorized');
+        }
+        const user = await usersCollection.findOne({ id: decoded.id });
+        if (!user) {
+            res.status(401).send('Unauthorized');
+        }
+        const accessToken = await jwtService.createJwtForUser(decoded);
+        const { refreshToken: newRefreshToken, expiresAt: newExpiresAt } = await jwtService.createRefreshToken(decoded);
+        const updated =await jwtService.updateRefreshToken(cookie_refresh,newRefreshToken, newExpiresAt)
+        if (!updated) {
+            res.status(500).send('Internal Error')
+        }
+
+        res.cookie('refreshToken', newRefreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'strict',
+            maxAge: 20_000 // 20 секунд
+        });
+
+        // Отправить access token
+        res.status(200).type('text/plain').send(accessToken);
+
+    } catch (error) {
+        console.error(error);
+        res.status(401).send('Unauthorized');
     }
 })
