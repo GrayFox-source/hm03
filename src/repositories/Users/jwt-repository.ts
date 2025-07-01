@@ -3,7 +3,7 @@ import {RefreshTokenDBModel} from "../../models/Auth/TokenModel";
 
 export const jwtRepository = {
     async refreshTokenRecord(token: string, userid: string) {
-        const refreshTokenRecord = refreshTokensCollection.findOne<RefreshTokenDBModel>(
+        const refreshTokenRecord = await refreshTokensCollection.findOne<RefreshTokenDBModel>(
             {
                 token: token,
                 userId: userid,
@@ -23,5 +23,16 @@ export const jwtRepository = {
             }
         );
         return update.modifiedCount === 1
-    }
+    },
+    async insertRefreshJwtToken(refreshToken: RefreshTokenDBModel): Promise<boolean> {
+        const insertToken = await refreshTokensCollection.insertOne(refreshToken)
+        if (!insertToken.insertedId) {
+            return false
+        }
+        return true
+    },
+    async deleteRefreshToken(token: string) {
+        const deleted = await refreshTokensCollection.deleteOne({token: token})
+        return deleted.deletedCount === 1
+    },
 }

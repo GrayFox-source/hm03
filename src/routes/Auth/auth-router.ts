@@ -9,7 +9,8 @@ import {
     EmailResendingModel,
     ResistrationConfirmationCodeModel
 } from "../../models/Auth/ResistrationConfirmationCodeModel";
-import {refreshTokensCollection, usersCollection} from "../../repositories/db";
+import {usersCollection} from "../../repositories/db";
+import {JwtPayload} from "jsonwebtoken";
 
 
 
@@ -43,8 +44,6 @@ authRouter.post('/login', async (req: RequestWithBody<LoginInputModel>, res) => 
     const accessToken = await jwtService.createJwtForUser(result)
     const refreshToken = await jwtService.createRefreshToken(result)
     res.cookie("refreshToken", refreshToken, {httpOnly: true})
-    console.log(res.cookie("refreshToken", refreshToken, {httpOnly: true}))
-    console.log('ALLO')
     res.status(201).send(accessToken);
 
 });
@@ -85,37 +84,60 @@ authRouter.post('/registration-email-resending', async (req: RequestWithBody<Ema
 })
 
 authRouter.post('/refresh-token', async (req, res) => {
-    const cookie_refresh = req.cookies.refresh_cookie
+    const cookie_refresh = req.cookies.refreshToken
     if (!cookie_refresh) {
         res.status(401).send("Unauthorized")
+        return
     }
 
     try {
-        const decoded = await jwtService.verifyUser(cookie_refresh)
-        const refreshTokenRecord = await jwtService.refreshTokenRecord(cookie_refresh, decoded.id)
-        if (!refreshTokenRecord) {
+        const decoded = await jwtService.verifyUser(cookie_refresh.refreshToken) as JwtPayload
+        const refreshTokenRecord = await jwtService.refreshTokenRecord(cookie_refresh.refreshToken, decoded.userId)
+        if (refreshTokenRecord === null) {
             res.status(401).send('Unauthorized');
+            return
         }
-        const user = await usersCollection.findOne({ id: decoded.id });
+        const user = await usersCollection.findOne({ id: decoded.userId });
         if (!user) {
             res.status(401).send('Unauthorized');
+            return
         }
-        const accessToken = await jwtService.createJwtForUser(decoded);
-        const { refreshToken: newRefreshToken, expiresAt: newExpiresAt } = await jwtService.createRefreshToken(decoded);
-        const updated =await jwtService.updateRefreshToken(cookie_refresh,newRefreshToken, newExpiresAt)
-        if (!updated) {
+        const accessToken = await jwtService.createJwtForUser(decoded.userId);
+        const updatedRefresh = await jwtService.updateRefreshToken(user, cookie_refresh.refreshToken)
+        if (!updatedRefresh) {
             res.status(500).send('Internal Error')
+            return
         }
 
-        res.cookie('refreshToken', newRefreshToken, {
+        res.cookie('refreshToken', updatedRefresh, {
             httpOnly: true,
-            secure: true,
-            sameSite: 'strict',
-            maxAge: 20_000 // 20 секунд
         });
 
         // Отправить access token
-        res.status(200).type('text/plain').send(accessToken);
+        res.status(200).send(accessToken);
+
+    } catch (error) {
+        console.error(error);
+        res.status(401).send('Unauthorized');
+    }
+})
+
+authRouter.post('/logout', async (req, res) => {
+    const cookie_refresh = req.cookies.refreshToken
+    if (!cookie_refresh) {
+        res.status(401).send("Unauthorized")
+        return
+    }
+
+    try {
+        const deleted = await jwtService.deleteRefreshToken(cookie_refresh.refreshToken);
+        if (!deleted) {
+            res.status(401).send('Unauthorized');
+            return
+        }
+
+        // 204 No content
+        res.status(204).send();
 
     } catch (error) {
         console.error(error);
