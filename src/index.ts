@@ -7,6 +7,7 @@ import {usersRouter} from "./routes/Users/users-router";
 import {authRouter} from "./routes/Auth/auth-router";
 import {commentsRouter} from "./routes/Comments/comments-router";
 import cookieParser from "cookie-parser";
+import {securityDevicesRouter} from "./routes/SecurityDevices/security-devices-router";
 
 export const app = express()
 const PORT = 3003
@@ -20,6 +21,7 @@ app.use('/posts', postsRouter)
 app.use('/users', usersRouter)
 app.use('/auth', authRouter)
 app.use('/comments', commentsRouter)
+app.use('/security', securityDevicesRouter)
 
 app.delete('/testing/all-data', async (req: Request, res: Response) => {
     await blogsCollection.deleteMany({})

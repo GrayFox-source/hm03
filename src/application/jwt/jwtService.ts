@@ -19,9 +19,9 @@ export const jwtService = {
             return null
         }
     },
-    async createRefreshToken(user: UserViewModel) {
-        const refreshToken = jwt.sign({userId: user.id}, settings.JWT_REFRESH_SECRET, {expiresIn: "70s"})
-        const expiresAt = new Date(Date.now() + 20 * 1000)
+    async createRefreshToken(user: UserViewModel, deviceId: string) {
+        const refreshToken = jwt.sign({userId: user.id, deviceId}, settings.JWT_REFRESH_SECRET, {expiresIn: "20d"})
+        const expiresAt = new Date(Date.now() + 20 * 100000)
         const refreshTokenForInsert = {
             token: refreshToken,
             userId: user.id,
@@ -38,9 +38,9 @@ export const jwtService = {
         const tokenA = await jwtRepository.refreshTokenRecord(token, userid)
         return tokenA
     },
-    async updateRefreshToken(user: UserDBModel,oldRefreshToken: string) {
-        const refreshToken = jwt.sign({userId: user.id}, settings.JWT_REFRESH_SECRET, {expiresIn: "70s"})
-        const expiresAt = new Date(Date.now() + 20 * 1000)
+    async updateRefreshToken(user: UserDBModel, deviceId: string, oldRefreshToken: string) {
+        const refreshToken = jwt.sign({userId: user.id, deviceId: deviceId}, settings.JWT_REFRESH_SECRET, {expiresIn: "20d"})
+        const expiresAt = new Date(Date.now() + 20 * 100000)
         const refreshTokenForUpdate = {
             token: refreshToken,
             userId: user.id,
@@ -51,7 +51,8 @@ export const jwtService = {
     },
     async deleteRefreshToken(token: string) {
         return await jwtRepository.deleteRefreshToken(token)
-
     },
-
+    async recordRequestMeta(requestMetaDTO: {ip: string, url: string, date: Date}) {
+        await jwtRepository.recordRequestMeta(requestMetaDTO)
+    },
 }

@@ -11,12 +11,18 @@ import {
 } from "../../models/Auth/ResistrationConfirmationCodeModel";
 import {usersCollection} from "../../repositories/db";
 import {JwtPayload} from "jsonwebtoken";
+import {requestLoggerMiddleware} from "../../middlewares/rate-limit";
+import { v4 as uuidv4 } from 'uuid';
+import {DeviceDBModel} from "../../models/Auth/DeviceModel";
+import {devicesService} from "../../domain/devices-service";
 
 
 
 export const authRouter = Router();
 
-authRouter.post('/login', async (req: RequestWithBody<LoginInputModel>, res) => {
+authRouter.post('/login',
+    requestLoggerMiddleware,
+    async (req: RequestWithBody<LoginInputModel>, res) => {
     const body: LoginInputModel = req.body;
 
     const errors: Array<{ message: string; field: string }> = [];
@@ -35,14 +41,25 @@ authRouter.post('/login', async (req: RequestWithBody<LoginInputModel>, res) => 
     }
 
     const result = await authService.authUser(body);
+    const deviceId = uuidv4()
+        const userAgent = req.headers['user-agent'] || 'Unknown Device';
+    const ip = req.ip || 'Unknown IP';
 
     if (!result) {
         res.status(401).send('Unauthorized');
         return
     }
 
+    const device: DeviceDBModel = {
+        ip,
+        title: userAgent,
+        lastActivateDate: String(new Date()),
+        deviceId,
+        userId: result!.id,
+    };
+    await devicesService.insertDevice(device)
     const accessToken = await jwtService.createJwtForUser(result)
-    const refreshToken = await jwtService.createRefreshToken(result)
+    const refreshToken = await jwtService.createRefreshToken(result, deviceId)
     res.cookie("refreshToken", refreshToken, {httpOnly: true})
     res.status(201).send(accessToken);
 
@@ -50,6 +67,7 @@ authRouter.post('/login', async (req: RequestWithBody<LoginInputModel>, res) => 
 
 authRouter.get('/me',
     authMiddleware,
+    requestLoggerMiddleware,
     async (req, res) =>  {
     const userInfo = await authService.getUserInfo({email: req.user!.email, login: req.user!.login, userId: req.user!.id})
     res.status(200).send(userInfo)
@@ -65,7 +83,9 @@ authRouter.post('/registration',
     }
 })
 
-authRouter.get('/registration-confirmation', async (req: RequestWithQuery<ResistrationConfirmationCodeModel>, res) => {
+authRouter.get('/registration-confirmation',
+    requestLoggerMiddleware,
+async (req: RequestWithQuery<ResistrationConfirmationCodeModel>, res) => {
     const data = await authService.userConfirmation({code: req.query.code})
     if (typeof data === "boolean") {
         res.sendStatus(204)
@@ -74,7 +94,9 @@ authRouter.get('/registration-confirmation', async (req: RequestWithQuery<Resist
     }
 })
 
-authRouter.post('/registration-email-resending', async (req: RequestWithBody<EmailResendingModel>, res) => {
+authRouter.post('/registration-email-resending',
+    requestLoggerMiddleware,
+    async (req: RequestWithBody<EmailResendingModel>, res) => {
     const data = await authService.emailResending(req.body)
     if (typeof data === 'boolean') {
         res.sendStatus(204)
@@ -83,7 +105,9 @@ authRouter.post('/registration-email-resending', async (req: RequestWithBody<Ema
     }
 })
 
-authRouter.post('/refresh-token', async (req, res) => {
+authRouter.post('/refresh-token',
+    requestLoggerMiddleware,
+    async (req, res) => {
     const cookie_refresh = req.cookies.refreshToken
     if (!cookie_refresh) {
         res.status(401).send("Unauthorized")
@@ -102,8 +126,12 @@ authRouter.post('/refresh-token', async (req, res) => {
             res.status(401).send('Unauthorized');
             return
         }
+        const updateActiveTime = await devicesService.updateActiveTimeOfSession(decoded.deviceId)
+        if (!updateActiveTime) {
+            res.status(500).send("Internal Error")
+        }
         const accessToken = await jwtService.createJwtForUser(decoded.userId);
-        const updatedRefresh = await jwtService.updateRefreshToken(user, cookie_refresh.refreshToken)
+        const updatedRefresh = await jwtService.updateRefreshToken(user, decoded.deviceId, cookie_refresh.refreshToken)
         if (!updatedRefresh) {
             res.status(500).send('Internal Error')
             return
@@ -122,7 +150,9 @@ authRouter.post('/refresh-token', async (req, res) => {
     }
 })
 
-authRouter.post('/logout', async (req, res) => {
+authRouter.post('/logout',
+    requestLoggerMiddleware,
+    async (req, res) => {
     const cookie_refresh = req.cookies.refreshToken
     if (!cookie_refresh) {
         res.status(401).send("Unauthorized")

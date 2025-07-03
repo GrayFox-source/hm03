@@ -1,4 +1,4 @@
-import {refreshTokensCollection} from "../db";
+import {refreshTokensCollection, requestMeta} from "../db";
 import {RefreshTokenDBModel} from "../../models/Auth/TokenModel";
 
 export const jwtRepository = {
@@ -35,4 +35,11 @@ export const jwtRepository = {
         const deleted = await refreshTokensCollection.deleteOne({token: token})
         return deleted.deletedCount === 1
     },
+    async recordRequestMeta(requestMetaDTO: {ip: string, url: string, date: Date}): Promise<boolean> {
+        const insertion = await requestMeta.insertOne(requestMetaDTO)
+        if (!insertion.insertedId) {
+            return false
+        }
+        return true
+    }
 }
