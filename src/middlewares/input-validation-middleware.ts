@@ -1,7 +1,10 @@
 import {body, FieldValidationError, validationResult} from 'express-validator'
 import {NextFunction, Request, Response} from "express";
-import {jwtService} from "../application/jwt/jwtService";
-import {usersService} from "../domain/users-service";
+import {UsersService} from "../domain/users-service";
+import "reflect-metadata"
+import {container, jwtService} from "../compositon-root";
+const usersService = container.get(UsersService)
+
 
 export const inputValidationMiddleware = (req: Request, res: Response, next: NextFunction): void => {
     const errors = validationResult(req);

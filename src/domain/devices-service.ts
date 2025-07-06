@@ -1,26 +1,32 @@
 import {DeviceDBModel, DeviceViewModel} from "../models/Auth/DeviceModel";
-import {devicesRepository} from "../repositories/DevicesSession/devices-repository";
+import {DevicesRepository} from "../repositories/DevicesSession/devices-repository";
+import {inject, injectable} from "inversify";
 
-export const devicesService = {
+
+@injectable()
+export class DevicesService  {
+    constructor(@inject(DevicesRepository) private devicesRepository: DevicesRepository) {
+    }
     async insertDevice(device: DeviceDBModel): Promise<boolean> {
-        return await devicesRepository.insertDevice(device)
-    },
+        return await this.devicesRepository.insertDevice(device)
+    }
     async findDevices(userId: string): Promise<DeviceViewModel[]> {
-        const devices = await devicesRepository.findDevices(userId)
+        const devices = await this.devicesRepository.findDevices(userId)
         return devices.map(device => ({
             ip: device.ip,
             title: device.title,
             lastActivateDate: device.lastActivateDate,
             deviceId: device.deviceId,
         }));
-    },
+    }
     async deleteDevices(deviceDTO: {userId: string, deviceId: string}) {
-        return await devicesRepository.deleteDevices(deviceDTO)
-    },
+        return await this.devicesRepository.deleteDevices(deviceDTO)
+    }
     async deleteDeviceById(deviceId: string): Promise<boolean> {
-        return await devicesRepository.deleteDeviceById(deviceId)
-    },
+        return await this.devicesRepository.deleteDeviceById(deviceId)
+    }
     async updateActiveTimeOfSession(deviceId: string): Promise<boolean> {
-        return await devicesRepository.updateActiveTimeOfSession(deviceId)
-    },
+        return await this.devicesRepository.updateActiveTimeOfSession(deviceId)
+    }
 }
+

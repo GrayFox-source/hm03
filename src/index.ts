@@ -8,6 +8,7 @@ import {authRouter} from "./routes/Auth/auth-router";
 import {commentsRouter} from "./routes/Comments/comments-router";
 import cookieParser from "cookie-parser";
 import {securityDevicesRouter} from "./routes/SecurityDevices/security-devices-router";
+import "reflect-metadata"
 
 export const app = express()
 const PORT = 3003

@@ -1,14 +1,21 @@
 import {CommentViewModel} from "../models/Comment/CommentViewModel";
-import {commentsRepository} from "../repositories/Comments/comments-repository";
+import {CommentsRepository} from "../repositories/Comments/comments-repository";
 
-export const commentsService = {
+
+export class CommentsService {
+    commentsRepository: CommentsRepository
+    constructor() {
+        this.commentsRepository = new CommentsRepository()
+    }
     async getCommentById(id: string): Promise<CommentViewModel | null> {
-        return await commentsRepository.getCommentById(id)
-    },
+        return await this.commentsRepository.getCommentById(id)
+    }
     async updateCommentById(dto: {id: string, content: string}) {
-        return await  commentsRepository.updateCommentById(dto)
-    },
+        return await  this.commentsRepository.updateCommentById(dto)
+    }
     async deleteCommentById(id: string) {
-        return await commentsRepository.deleteCommentById(id)
-    },
+        return await this.commentsRepository.deleteCommentById(id)
+    }
 }
+
+

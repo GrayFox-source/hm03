@@ -3,13 +3,17 @@ import {PostsRepository} from "../repositories/Posts/posts-repository";
 import {CommentViewModel} from "../models/Comment/CommentViewModel";
 
 
-export const postsService = {
+export class PostsService {
+    PostsRepository: PostsRepository
+    constructor() {
+        this.PostsRepository = new PostsRepository()
+    }
     async getAllPosts(): Promise<PostViewModel[]> {
-        return PostsRepository.getAllPosts()
-    },
+        return this.PostsRepository.getAllPosts()
+    }
     async getPostById(id:string): Promise<PostViewModel | null> {
-        return PostsRepository.getPostById(id)
-    },
+        return this.PostsRepository.getPostById(id)
+    }
     async createNewPost(createPostDTO:{title: string, shortDescription: string, content: string, blogId: string}): Promise<PostViewModel> {
         const newPost = {
             id: String(+(new Date())),
@@ -20,17 +24,17 @@ export const postsService = {
             blogName: 'string',
             createdAt: new Date().toISOString()
         }
-        const createdPost = await PostsRepository.createNewPost(newPost)
+        const createdPost = await this.PostsRepository.createNewPost(newPost)
         return createdPost
-    },
+    }
     async updatePostById(updatePostDTO:{id:string, title: string, shortDescription: string, content: string, blogId: string}): Promise<boolean> {
-        return await PostsRepository.updatePostById({id: updatePostDTO.id, title: updatePostDTO.title, shortDescription: updatePostDTO.shortDescription, content: updatePostDTO.content, blogId:updatePostDTO.blogId})
-    },
+        return await this.PostsRepository.updatePostById({id: updatePostDTO.id, title: updatePostDTO.title, shortDescription: updatePostDTO.shortDescription, content: updatePostDTO.content, blogId:updatePostDTO.blogId})
+    }
     async deletePostById(id:string) {
-        return await PostsRepository.deletePostById(id)
-    },
+        return await this.PostsRepository.deletePostById(id)
+    }
     async createCommentForPost(commentDTO: {postId: string, content: string, userId: string, userLogin: string}): Promise<CommentViewModel | null> {
-        const findedPost = await PostsRepository.getPostById(commentDTO.postId)
+        const findedPost = await this.PostsRepository.getPostById(commentDTO.postId)
 
         if (!findedPost) {
             return null
@@ -46,7 +50,9 @@ export const postsService = {
             createdAt: (new Date()).toISOString(),
         }
 
-        const result = await PostsRepository.createCommentForPost(newComment)
+        const result = await this.PostsRepository.createCommentForPost(newComment)
         return result
-    },
+    }
 }
+
+

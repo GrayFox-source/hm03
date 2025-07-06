@@ -1,5 +1,5 @@
 import {BlogViewModel} from "../models/Blogs/BlogViewModel";
-import {blogsRepository} from "../repositories/Blogs/blogs-repository";
+import {BlogsRepository} from "../repositories/Blogs/blogs-repository";
 import {IGetWithPagination} from "../repositories/interfaces/get-with-pagination.interface";
 import {BlogPostInputModel} from "../models/BlogPostInputModel";
 import {PostViewModel} from "../models/Posts/PostViewModel";
@@ -8,17 +8,29 @@ import {PaginatorPosts} from "../models/Posts/Paginator-Posts";
 import {PaginatorBlogs} from "../models/Blogs/Paginator-Blogs";
 
 
-export const blogsService = {
+export class BlogsService {
+    private blogsRepository: BlogsRepository;
+    private postsRepository: PostsRepository
+    constructor() {
+        this.blogsRepository = new BlogsRepository()
+        this.postsRepository = new PostsRepository()
+    }
+
     async getAllBlogs(dto: IGetWithPagination): Promise<PaginatorBlogs> {
-        return blogsRepository.getAllBlogs(dto)
-    },
+        return this.blogsRepository.getAllBlogs(dto)
+    }
+
     async getBlogByID(id: string): Promise<BlogViewModel | null> {
-        return blogsRepository.getBlogByID(id)
-    },
+        return this.blogsRepository.getBlogByID(id)
+    }
+
+
     async getPostsByBlogId(blogId: string, dto: IGetWithPagination): Promise<PaginatorPosts> {
-        return blogsRepository.getPostsByBlogId(blogId, dto)
-    },
-    async createBlog(inputBlogDTO:{name:string, description:string, websiteUrl:string}): Promise<BlogViewModel> {
+        return this.blogsRepository.getPostsByBlogId(blogId, dto)
+    }
+
+
+    async createBlog(inputBlogDTO: { name: string, description: string, websiteUrl: string }): Promise<BlogViewModel> {
         const newBlog: BlogViewModel = {
             id: String(+(new Date())),
             name: inputBlogDTO.name,
@@ -27,11 +39,13 @@ export const blogsService = {
             createdAt: new Date().toISOString(),
             isMembership: false
         }
-        const createdBlog = await blogsRepository.createBlog(newBlog)
+        const createdBlog = await this.blogsRepository.createBlog(newBlog)
         return createdBlog
-    },
+    }
+
+
     async createPostForBlog(blogId: string, inputModel: BlogPostInputModel): Promise<PostViewModel | null> {
-        const blog: BlogViewModel | null = await blogsRepository.getBlogByID(blogId);
+        const blog: BlogViewModel | null = await this.blogsRepository.getBlogByID(blogId);
         if (!blog) return null;
 
         const newPost: PostViewModel = {
@@ -43,15 +57,30 @@ export const blogsService = {
             blogName: blog.name,
             createdAt: new Date().toISOString()
         }
-        const createdPost = await PostsRepository.createNewPost(newPost);
+        const createdPost = await this.postsRepository.createNewPost(newPost);
         console.log(createdPost)
         return createdPost;
-    },
-    async updateBlogByID(updateBlogDTO:{id: string,name:string, description:string, websiteUrl:string}): Promise<boolean> {
-        return await blogsRepository.updateBlogByID({id: updateBlogDTO.id, name: updateBlogDTO.name, description: updateBlogDTO.description, websiteUrl: updateBlogDTO.websiteUrl})
+    }
 
-    },
-    async deleteBlogByID(id:string): Promise<boolean> {
-        return await blogsRepository.deleteBlogByID(id)
+
+    async updateBlogByID(updateBlogDTO: {
+        id: string,
+        name: string,
+        description: string,
+        websiteUrl: string
+    }): Promise<boolean> {
+        return await this.blogsRepository.updateBlogByID({
+            id: updateBlogDTO.id,
+            name: updateBlogDTO.name,
+            description: updateBlogDTO.description,
+            websiteUrl: updateBlogDTO.websiteUrl
+        })
+
+    }
+
+    async deleteBlogByID(id: string): Promise<boolean> {
+        return await this.blogsRepository.deleteBlogByID(id)
     }
 }
+
+

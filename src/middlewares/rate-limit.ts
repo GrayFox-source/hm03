@@ -1,6 +1,7 @@
 import {Request, Response, NextFunction} from "express";
-import {jwtService} from "../application/jwt/jwtService";
+
 import {requestMeta} from "../repositories/db";
+import {jwtService} from "../compositon-root";
 
 export const requestLoggerMiddleware =  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const ip = req.ip || req.connection.remoteAddress || '';

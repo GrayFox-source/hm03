@@ -1,16 +1,20 @@
 import {UserDBModel, UserViewModel} from "../../models/User/UserViewModel";
 import jwt, {JwtPayload} from "jsonwebtoken"
 import {settings} from "../../settings";
-import {jwtRepository} from "../../repositories/Users/jwt-repository";
+import {JwtRepository} from "../../repositories/Users/jwt-repository";
 import {RefreshTokenDBModel} from "../../models/Auth/TokenModel";
+import {inject, injectable} from "inversify";
 
-export const jwtService = {
+@injectable()
+export class JwtService {
+    constructor(@inject(JwtRepository) private jwtRepository: JwtRepository) {
+    }
     async createJwtForUser(user: UserViewModel) {
         const accessToken = jwt.sign({userId: user.id},  settings.JWT_ACCESS_SECRET, {expiresIn: "60s"})
         return {
-                accessToken: accessToken
-            }
-    },
+            accessToken: accessToken
+        }
+    }
     async getIdUserByToken(token: string) {
         try {
             const result: any = jwt.verify(token, settings.JWT_ACCESS_SECRET)
@@ -18,7 +22,7 @@ export const jwtService = {
         } catch (e) {
             return null
         }
-    },
+    }
     async createRefreshToken(user: UserViewModel, deviceId: string) {
         const refreshToken = jwt.sign({userId: user.id, deviceId}, settings.JWT_REFRESH_SECRET, {expiresIn: "20d"})
         const expiresAt = new Date(Date.now() + 20 * 100000)
@@ -27,17 +31,17 @@ export const jwtService = {
             userId: user.id,
             expiresAt: expiresAt,
         }
-        await jwtRepository.insertRefreshJwtToken(refreshTokenForInsert)
+        await this.jwtRepository.insertRefreshJwtToken(refreshTokenForInsert)
         return {refreshToken, expiresAt}
-    },
+    }
     async verifyUser(refreshToken: string): Promise<string | JwtPayload> {
         const decoded = jwt.verify(refreshToken, settings.JWT_REFRESH_SECRET)
         return decoded
-    },
+    }
     async refreshTokenRecord(token: string, userid: string): Promise<RefreshTokenDBModel | null> {
-        const tokenA = await jwtRepository.refreshTokenRecord(token, userid)
+        const tokenA = await this.jwtRepository.refreshTokenRecord(token, userid)
         return tokenA
-    },
+    }
     async updateRefreshToken(user: UserDBModel, deviceId: string, oldRefreshToken: string) {
         const refreshToken = jwt.sign({userId: user.id, deviceId: deviceId}, settings.JWT_REFRESH_SECRET, {expiresIn: "20d"})
         const expiresAt = new Date(Date.now() + 20 * 100000)
@@ -46,13 +50,14 @@ export const jwtService = {
             userId: user.id,
             expiresAt: expiresAt,
         }
-        await jwtRepository.updateRefreshToken(oldRefreshToken, refreshTokenForUpdate.token, refreshTokenForUpdate.expiresAt)
+        await this.jwtRepository.updateRefreshToken(oldRefreshToken, refreshTokenForUpdate.token, refreshTokenForUpdate.expiresAt)
         return {refreshToken, expiresAt}
-    },
+    }
     async deleteRefreshToken(token: string) {
-        return await jwtRepository.deleteRefreshToken(token)
-    },
+        return await this.jwtRepository.deleteRefreshToken(token)
+    }
     async recordRequestMeta(requestMetaDTO: {ip: string, url: string, date: Date}) {
-        await jwtRepository.recordRequestMeta(requestMetaDTO)
-    },
+        await this.jwtRepository.recordRequestMeta(requestMetaDTO)
+    }
 }
+

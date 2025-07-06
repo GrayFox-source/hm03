@@ -1,5 +1,5 @@
 import {loginInputModel} from "../models/Auth/LoginInputModel";
-import {usersService} from "./users-service";
+import {UsersService} from "./users-service";
 import bcrypt from "bcrypt";
 import {UserViewModel} from "../models/User/UserViewModel";
 import {MeViewModel} from "../models/Me/MeViewModel";
@@ -7,9 +7,15 @@ import {RegistrationInputModel} from "../models/Auth/RegistrationInputModel";
 import {ErrorFieldViewModel} from "../models/ErrorFieldViewModel";
 import {EmailResendingModel, ResistrationConfirmationCodeModel} from "../models/Auth/ResistrationConfirmationCodeModel";
 import {mailerAdapter} from "../adapter/Mailer-adapter";
+import {injectable, inject} from "inversify";
 
-export const authService = {
-    async authUser(dto: loginInputModel): Promise< UserViewModel  | null> {
+@injectable()
+export class AuthService {
+
+    constructor(@inject(UsersService) private usersService: UsersService) {
+    }
+
+    async authUser(dto: loginInputModel): Promise<UserViewModel | null> {
         const {loginOrEmail, password} = dto;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const loginRegex = /^[a-zA-Z0-9_-]*$/;
@@ -20,10 +26,9 @@ export const authService = {
         let user;
 
         if (isEmail) {
-            user = await usersService.findUserByEmail(loginOrEmail);
+            user = await this.usersService.findUserByEmail(loginOrEmail);
         } else if (isLogin) {
-            let userService;
-            user = await usersService.findUserByLogin(loginOrEmail);
+            user = await this.usersService.findUserByLogin(loginOrEmail);
         }
 
         if (!user) {
@@ -42,20 +47,22 @@ export const authService = {
             email: user.email,
             createdAt: user.createdAt,
         };
-    },
+    }
+
     async getUserInfo(dto: MeViewModel): Promise<MeViewModel> {
         return {
             email: dto.email,
             login: dto.login,
             userId: dto.userId,
         }
-    },
+    }
+
     async registerUser(dto: RegistrationInputModel): Promise<boolean | ErrorFieldViewModel[]> {
         const errorField: ErrorFieldViewModel[] = [];
         const confirmationCode = String(+(new Date()))
         const [findUserByEmail, findUserByLogin] = await Promise.all([
-            usersService.findUserByEmail(dto.email),
-            usersService.findUserByLogin(dto.login)
+            this.usersService.findUserByEmail(dto.email),
+            this.usersService.findUserByLogin(dto.login)
         ]);
         if (findUserByEmail) {
             errorField.push({error: 'dolbaeb user with this email is already exist', field: dto.email})
@@ -70,28 +77,31 @@ export const authService = {
             password: dto.password,
             email: dto.email
         }
-        await usersService.createNewUser(newUser, confirmationCode)
+        await this.usersService.createNewUser(newUser, confirmationCode)
         try {
             await mailerAdapter.sendMailConfirmationCode(dto.email, confirmationCode)
         } catch (error) {
             console.error(error)
-            await usersService.deleteUserByEmail(newUser.email)
+            await this.usersService.deleteUserByEmail(newUser.email)
             return false
         }
 
         return true
-    },
+    }
+
     async userConfirmation(code: ResistrationConfirmationCodeModel) {
-        return await usersService.updateUserByCode(code)
-    },
+        return await this.usersService.updateUserByCode(code)
+    }
+
     async emailResending(email: EmailResendingModel): Promise<boolean | ErrorFieldViewModel[]> {
         const errorField: ErrorFieldViewModel[] = [];
-        const user = await usersService.findUserByEmail(email.email)
+        const user = await this.usersService.findUserByEmail(email.email)
         if (!user) {
             errorField.push({error: 'Have a problem, this user is not existing', field: email.email})
             return errorField
         }
-        const resendingEmailConfirmationCode = await mailerAdapter.sendMailConfirmationCode(email.email, user?.emailConfirmation.confirmationCode)
+        await mailerAdapter.sendMailConfirmationCode(email.email, user?.emailConfirmation.confirmationCode)
         return true
     }
 }
+

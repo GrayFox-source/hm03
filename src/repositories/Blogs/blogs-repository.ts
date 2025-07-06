@@ -5,7 +5,7 @@ import {PaginatorPosts} from "../../models/Posts/Paginator-Posts";
 import {PaginatorBlogs} from "../../models/Blogs/Paginator-Blogs";
 
 
-export const blogsRepository = {
+export class BlogsRepository {
     async getAllBlogs(dto: IGetWithPagination): Promise<PaginatorBlogs> {
         const filter: Record<string, unknown> = {};
         const sortDirection = dto.sortDirection ?? 'asc';
@@ -22,7 +22,7 @@ export const blogsRepository = {
 
         const totalCount = await blogsCollection.countDocuments(filter)
         const pagesCount = Math.ceil(totalCount / pageSize)
-        const items = await blogsCollection.find(filter).sort({[sortBy]: sortDirection === 'asc' ? 1 : -1}).skip((pageNumber -1) * pageSize).limit(pageSize).toArray()
+        const items = await blogsCollection.find(filter).sort({[sortBy]: sortDirection === 'asc' ? 1 : -1}).skip((pageNumber - 1) * pageSize).limit(pageSize).toArray()
 
         return {
             pagesCount,
@@ -31,24 +31,24 @@ export const blogsRepository = {
             totalCount,
             items,
         };
-    },
-    async getBlogByID(id:string): Promise<BlogViewModel | null> {
+    }
+    async getBlogByID(id: string): Promise<BlogViewModel | null> {
         const blog: BlogViewModel | null = await blogsCollection.findOne({id: id})
         if (blog) {
             return blog
         } else {
             return null
         }
-    },
+    }
     async getPostsByBlogId(blogId: string, dto: IGetWithPagination): Promise<PaginatorPosts> {
-        const {pageNumber = 1, pageSize = 10, sortBy = 'createdAt', sortDirection = 'desc' } = dto
+        const {pageNumber = 1, pageSize = 10, sortBy = 'createdAt', sortDirection = 'desc'} = dto
         const filter = {blogId}
 
         const totalCount = await postsCollection.countDocuments(filter);
         const pagesCount = Math.ceil(totalCount / pageSize);
 
         const items = await postsCollection
-            .find(filter).sort({[sortBy]: sortDirection === 'asc' ? 1: -1})
+            .find(filter).sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
             .toArray();
@@ -60,18 +60,29 @@ export const blogsRepository = {
             totalCount,
             items,
         };
-    },
+    }
     async createBlog(newBlog: BlogViewModel): Promise<BlogViewModel> {
-        const result = await blogsCollection.insertOne(newBlog)
+        await blogsCollection.insertOne(newBlog)
         return newBlog
-    },
-    async updateBlogByID(updateBlogDTO:{id: string,name:string, description:string, websiteUrl:string}): Promise<boolean> {
-        const result = await blogsCollection.updateOne({id: updateBlogDTO.id}, {$set: {name:updateBlogDTO.name,
-            description: updateBlogDTO.description, websiteUrl: updateBlogDTO.websiteUrl}})
+    }
+    async updateBlogByID(updateBlogDTO: {
+        id: string,
+        name: string,
+        description: string,
+        websiteUrl: string
+    }): Promise<boolean> {
+        const result = await blogsCollection.updateOne({id: updateBlogDTO.id}, {
+            $set: {
+                name: updateBlogDTO.name,
+                description: updateBlogDTO.description, websiteUrl: updateBlogDTO.websiteUrl
+            }
+        })
         return result.matchedCount === 1
-    },
-    async deleteBlogByID(id:string): Promise<boolean> {
+    }
+    async deleteBlogByID(id: string): Promise<boolean> {
         const result = await blogsCollection.deleteOne({id: id})
         return result.deletedCount === 1
     }
 }
+
+

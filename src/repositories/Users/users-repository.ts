@@ -3,9 +3,10 @@ import {usersCollection} from "../db";
 import {GetWithPaginationUsers} from "../interfaces/get-with-pagination-users";
 import {UserDBModel} from "../../models/User/UserViewModel";
 import {ResistrationConfirmationCodeModel} from "../../models/Auth/ResistrationConfirmationCodeModel";
+import {injectable} from "inversify";
 
-
-export const usersRepository = {
+@injectable()
+export class UsersRepository {
     async getAllUsers(dto: GetWithPaginationUsers): Promise<PaginatorUsers> {
         const filter: Record<string, unknown> = {};
         const sortDirection = dto.sortDirection ?? 'asc';
@@ -38,7 +39,14 @@ export const usersRepository = {
             totalCount,
             items
         }
-    },
+    }
+    async createUser(user: UserDBModel): Promise<boolean> {
+        const result = await usersCollection.insertOne(user)
+        if (!result.insertedId) {
+            return false
+        }
+        return true
+    }
     async getUserById(id: string): Promise<UserDBModel | null> {
         const findedUser: UserDBModel | null = await usersCollection.findOne({id: id})
         if (findedUser) {
@@ -46,21 +54,21 @@ export const usersRepository = {
         } else {
             return null
         }
-    },
+    }
     async deleteUserById(id: string) {
         const deleted = await usersCollection.deleteOne({id: id})
         return deleted.deletedCount === 1
-    },
+    }
     async deleteUserByEmail(email: string) {
         const deleteUser = await usersCollection.deleteOne({email: email})
         return deleteUser.deletedCount === 1
-    },
+    }
     async updateUserByCode(code: ResistrationConfirmationCodeModel): Promise<boolean> {
         const updated = await usersCollection.updateOne(
             {"emailConfirmation.confirmationCode": code.code},
-        {$set: {"emailConfirmation.isConfirmed": true}})
+            {$set: {"emailConfirmation.isConfirmed": true}})
         return updated.matchedCount === 1
-    },
+    }
     async getUserByCode(code: ResistrationConfirmationCodeModel): Promise<UserDBModel | null> {
         const data = await usersCollection.findOne({ "emailConfirmation.confirmationCode": code.code });
         if (!data) {
@@ -71,5 +79,5 @@ export const usersRepository = {
         }
         return data;
     }
-
 }
+

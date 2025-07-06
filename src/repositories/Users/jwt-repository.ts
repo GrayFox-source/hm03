@@ -1,7 +1,10 @@
 import {refreshTokensCollection, requestMeta} from "../db";
 import {RefreshTokenDBModel} from "../../models/Auth/TokenModel";
+import {injectable} from "inversify";
+import "reflect-metadata"
 
-export const jwtRepository = {
+@injectable()
+export class JwtRepository {
     async refreshTokenRecord(token: string, userid: string) {
         const refreshTokenRecord = await refreshTokensCollection.findOne<RefreshTokenDBModel>(
             {
@@ -11,7 +14,7 @@ export const jwtRepository = {
             }
         )
         return refreshTokenRecord
-    },
+    }
     async updateRefreshToken(oldRefreshToken:string,newRefreshToken: string, newExpiresAt: Date): Promise<boolean> {
         const update = await refreshTokensCollection.updateOne(
             { token: oldRefreshToken },
@@ -23,18 +26,18 @@ export const jwtRepository = {
             }
         );
         return update.modifiedCount === 1
-    },
+    }
     async insertRefreshJwtToken(refreshToken: RefreshTokenDBModel): Promise<boolean> {
         const insertToken = await refreshTokensCollection.insertOne(refreshToken)
         if (!insertToken.insertedId) {
             return false
         }
         return true
-    },
+    }
     async deleteRefreshToken(token: string) {
         const deleted = await refreshTokensCollection.deleteOne({token: token})
         return deleted.deletedCount === 1
-    },
+    }
     async recordRequestMeta(requestMetaDTO: {ip: string, url: string, date: Date}): Promise<boolean> {
         const insertion = await requestMeta.insertOne(requestMetaDTO)
         if (!insertion.insertedId) {
@@ -43,3 +46,5 @@ export const jwtRepository = {
         return true
     }
 }
+
+

@@ -1,43 +1,27 @@
-import {Request, Response, Router} from "express";
-import {RequestWithBody, RequestWithParams} from "../../types";
-import {usersService} from "../../domain/users-service";
-import {UserInputModel} from "../../models/User/UserInputModel";
-import {ErrorWithValidation} from "../../models/Classes/ErrorWithValidation";
+import {Router} from "express";
 import * as validation from "../../middlewares/input-validation-middleware";
 import {authorisedCheckValidator, InputUserPasswordValidation} from "../../middlewares/input-validation-middleware";
+import {requestLoggerMiddleware} from "../../middlewares/rate-limit";
+import {container} from "../../compositon-root";
+import {UsersController} from "./users-controller";
 
 export const usersRouter = Router()
 
+// const usersController = ioc.getInstance<UsersController>(UsersController)
+
+const usersController = container.get(UsersController)
+
 usersRouter.get('/',
     authorisedCheckValidator,
-    async (req: Request, res: Response) => {
-        const result = await usersService.getAllUsers(req.body)
-        res.status(200).send(result)
-    })
+    requestLoggerMiddleware,
+    usersController.getAllUsers.bind(usersController))
 
 usersRouter.post('/',
     authorisedCheckValidator,
     InputUserPasswordValidation,
-    async (req: RequestWithBody<UserInputModel>, res: Response) => {
-        try {
-            const confirmationCode = String(+(new Date()))
-            const user = await usersService.createNewUser(req.body, confirmationCode);
-            res.status(201).json(user);
-        } catch (e) {
-            if (e instanceof ErrorWithValidation) {
-                res.status(400).json({errorsMessages: e.errorsMessages});
-                return;
-            }
-        }
-    })
+    requestLoggerMiddleware,
+    usersController.createNewUser.bind(usersController))
 
 usersRouter.delete('/:id',
     validation.authorisedCheckValidator,
-    async (req: RequestWithParams<{ id: string }>, res: Response) => {
-        const deletedUser = await usersService.deleteUserById(req.params.id)
-        if (deletedUser) {
-            res.send(204)
-        } else {
-            res.send(404)
-        }
-    })
+    usersController.deleteUser.bind(usersController))
