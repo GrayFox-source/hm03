@@ -59,5 +59,16 @@ export class JwtService {
     async recordRequestMeta(requestMetaDTO: {ip: string, url: string, date: Date}) {
         await this.jwtRepository.recordRequestMeta(requestMetaDTO)
     }
+    async generateRecoveryCode(userId: string): Promise<string | undefined> {
+        return jwt.sign({userId}, settings.JWT_RECOVERY_SECRET, {expiresIn: '1d'} )
+    }
+    async verifyRecoveryToken(token: string) {
+        try {
+            const decoded = jwt.verify(token, settings.JWT_RECOVERY_SECRET) as {userId: string}
+            return decoded.userId
+        } catch (e) {
+            return null
+        }
+    }
 }
 

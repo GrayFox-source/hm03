@@ -3,6 +3,7 @@ import {NextFunction, Request, Response} from "express";
 import {UsersService} from "../domain/users-service";
 import "reflect-metadata"
 import {container, jwtService} from "../compositon-root";
+
 const usersService = container.get(UsersService)
 
 
@@ -88,4 +89,29 @@ export const InputPostBlogIDValidation = body('blogId').isString().withMessage('
 
 export const InputUserPasswordValidation = body('password').isLength({min: 6, max: 20}).withMessage('Invalid password')
 
-export const CommentContentInputValidation = body('content').isLength({min: 20, max:300}).withMessage('Invalid content for comment')
+export const CommentContentInputValidation = body('content').isLength({
+    min: 20,
+    max: 300
+}).withMessage('Invalid content for comment')
+
+const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+
+export const validateEmailFormat = (req: Request, res: Response, next: NextFunction) => {
+    const email = req.body.email;
+
+    if (!email) {
+        res.status(400).send({
+            error: 'Email is required',
+        });
+        return
+    }
+
+    if (!emailRegex.test(email)) {
+        res.status(400).send({
+            error: 'Email format is invalid',
+        });
+        return
+    }
+
+    next();
+};

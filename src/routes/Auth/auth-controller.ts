@@ -14,12 +14,17 @@ import {
 import {JwtPayload} from "jsonwebtoken";
 import {usersCollection} from "../../repositories/db";
 import {inject, injectable} from "inversify";
+import {PasswordRecoveryMailInputModel} from "../../models/Auth/PasswordRecoveryMailInputModel";
+import {UsersService} from "../../domain/users-service";
+import {jwtService} from "../../compositon-root";
+import {NewPasswordRecoveryInputModel} from "../../models/Auth/NewPasswordRecoveryInputModel";
 
 @injectable()
 export class AuthController {
     constructor(@inject(AuthService) private authService: AuthService,
                 @inject(JwtService) private jwtService: JwtService,
-                @inject(DevicesService) private devicesService: DevicesService) {
+                @inject(DevicesService) private devicesService: DevicesService,
+                @inject(UsersService) private usersService: UsersService) {
     }
 
     async login(req: RequestWithBody<LoginInputModel>, res: Response) {
@@ -165,6 +170,32 @@ export class AuthController {
             console.error(error);
             res.status(401).send('Unauthorized');
         }
+    }
+
+    async passwordRecovery(req: RequestWithBody<PasswordRecoveryMailInputModel>, res: Response) {
+        const email = req.body.email
+
+        const user = await this.usersService.findUserByEmail(email)
+        if (!user) {
+            res.sendStatus(404)
+            return
+        }
+        const token = await jwtService.generateRecoveryCode(user.id)
+        await this.authService.passwordRecovery(email, token!)
+        res.status(204).send("Instruction send to your email")
+    }
+    async setNewPassword(req: RequestWithBody<NewPasswordRecoveryInputModel>, res: Response) {
+        const {newPassword, recoveryCode} = req.body
+        const decodedUser = await jwtService.verifyRecoveryToken(recoveryCode)
+        if (!decodedUser) {
+            res.sendStatus(400)
+        }
+        const updated = await this.usersService.setNewPassword(decodedUser!, newPassword)
+        if (updated) {
+            res.sendStatus(204)
+            return
+        }
+        res.sendStatus(400)
     }
 
 }

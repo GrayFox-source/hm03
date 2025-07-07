@@ -87,6 +87,15 @@ export class UsersService {
             return errorField
         }
     }
+
+    async setNewPassword(userId: string, newPassword: string): Promise<boolean> {
+        const password = await this._hashPassword(newPassword)
+        const updated = await this.usersRepository.setNewPassword(userId, password)
+        if (updated) {
+            return true
+        }
+        return false
+    }
 }
 
 

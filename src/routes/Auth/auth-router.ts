@@ -1,5 +1,8 @@
 import {Router} from "express";
-import {authMiddleware} from "../../middlewares/input-validation-middleware";
+import {
+    authMiddleware,
+    validateEmailFormat
+} from "../../middlewares/input-validation-middleware";
 import {requestLoggerMiddleware} from "../../middlewares/rate-limit";
 import {container} from "../../compositon-root";
 import {AuthController} from "./auth-controller";
@@ -38,3 +41,15 @@ authRouter.post('/refresh-token',
 authRouter.post('/logout',
     requestLoggerMiddleware,
     authControllerInstance.logout.bind(authControllerInstance))
+
+authRouter.post('/password-recovery',
+    requestLoggerMiddleware,
+    validateEmailFormat,
+    authControllerInstance.passwordRecovery.bind(authControllerInstance))
+
+authRouter.post('/new-password',
+    requestLoggerMiddleware,
+    validateEmailFormat,
+    authControllerInstance.setNewPassword.bind(authControllerInstance))
+
+

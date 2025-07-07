@@ -1,7 +1,8 @@
-import {refreshTokensCollection, requestMeta} from "../db";
+import {recoveryCodeCollection, refreshTokensCollection, requestMeta} from "../db";
 import {RefreshTokenDBModel} from "../../models/Auth/TokenModel";
 import {injectable} from "inversify";
 import "reflect-metadata"
+import {RecoveryCodeDBModel} from "../../models/Auth/PasswordRecoveryMailInputModel";
 
 @injectable()
 export class JwtRepository {
@@ -44,6 +45,14 @@ export class JwtRepository {
             return false
         }
         return true
+    }
+
+    async insertRecoveryCode(recoveryCode: RecoveryCodeDBModel): Promise<boolean> {
+        const data = await recoveryCodeCollection.insertOne(recoveryCode)
+        if (data.insertedId) {
+            return true
+        }
+        return false
     }
 }
 

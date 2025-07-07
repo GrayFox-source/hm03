@@ -103,5 +103,10 @@ export class AuthService {
         await mailerAdapter.sendMailConfirmationCode(email.email, user?.emailConfirmation.confirmationCode)
         return true
     }
+
+    async passwordRecovery(email: string, recoveryCode: string) {
+         await mailerAdapter.sendPasswordRecoveryCode(email, recoveryCode)
+    }
+
 }
 

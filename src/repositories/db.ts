@@ -7,6 +7,7 @@ import {CommentViewModel} from "../models/Comment/CommentViewModel";
 import {RefreshTokenDBModel} from "../models/Auth/TokenModel";
 import {RequestMeta} from "../models/Auth/RequestMeta";
 import {DeviceDBModel} from "../models/Auth/DeviceModel";
+import {RecoveryCodeDBModel} from "../models/Auth/PasswordRecoveryMailInputModel";
 
 dotenv.config()
 
@@ -25,6 +26,8 @@ export const refreshTokensCollection = db.collection<RefreshTokenDBModel>('refre
 export const requestMeta = db.collection<RequestMeta>('requestMeta')
 
 export const devicesCollection = db.collection<DeviceDBModel>('devices')
+
+export const recoveryCodeCollection = db.collection<RecoveryCodeDBModel>('passwordRecoveryCodes')
 
 
 

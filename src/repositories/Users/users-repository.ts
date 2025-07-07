@@ -79,5 +79,10 @@ export class UsersRepository {
         }
         return data;
     }
+
+    async setNewPassword(userId: string, password: string) {
+        const updated = await usersCollection.updateOne({id: userId}, {$set :{passwordHash: password}})
+        return updated.modifiedCount === 1
+    }
 }
 
