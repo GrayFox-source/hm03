@@ -12,7 +12,6 @@ import {AuthController} from "./auth-controller";
 export const authRouter = Router();
 
 const authControllerInstance = container.get(AuthController)
-console.log(authControllerInstance)
 
 authRouter.post('/login',
     requestLoggerMiddleware,

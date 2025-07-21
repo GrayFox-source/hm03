@@ -1,6 +1,6 @@
-import {AuthService} from "../../domain/auth-service";
-import {JwtService} from "../../application/jwt/jwtService";
-import {DevicesService} from "../../domain/devices-service";
+import {AuthService} from "../../application/auth-service";
+import {JwtService} from "../../application/jwtService";
+import {DevicesService} from "../../application/devices-service";
 import {RequestWithBody, RequestWithQuery} from "../../types";
 import {LoginInputModel} from "../../models/Login/LoginInputModel";
 import {Request, Response} from "express";
@@ -12,10 +12,10 @@ import {
     ResistrationConfirmationCodeModel
 } from "../../models/Auth/ResistrationConfirmationCodeModel";
 import {JwtPayload} from "jsonwebtoken";
-import {usersCollection} from "../../repositories/db";
+import {usersCollection} from "../../infrastucture/db";
 import {inject, injectable} from "inversify";
 import {PasswordRecoveryMailInputModel} from "../../models/Auth/PasswordRecoveryMailInputModel";
-import {UsersService} from "../../domain/users-service";
+import {UsersService} from "../../application/users-service";
 import {jwtService} from "../../compositon-root";
 import {NewPasswordRecoveryInputModel} from "../../models/Auth/NewPasswordRecoveryInputModel";
 

@@ -2,7 +2,7 @@ import express, {Request, Response} from 'express';
 import bodyParser from 'body-parser'
 import {blogsRouter} from "./routes/Blogs/blogs-router";
 import {postsRouter} from "./routes/Posts/posts-router";
-import {blogsCollection, postsCollection, runDb, usersCollection} from "./repositories/db";
+import {blogsCollection, postsCollection, runDb, usersCollection} from "./infrastucture/db";
 import {usersRouter} from "./routes/Users/users-router";
 import {authRouter} from "./routes/Auth/auth-router";
 import {commentsRouter} from "./routes/Comments/comments-router";

@@ -1,11 +1,12 @@
 import {BlogViewModel} from "../models/Blogs/BlogViewModel";
-import {BlogsRepository} from "../repositories/Blogs/blogs-repository";
-import {IGetWithPagination} from "../repositories/interfaces/get-with-pagination.interface";
+import {BlogsRepository} from "../infrastucture/blogs-repository";
+import {IGetWithPagination} from "../infrastucture/interfaces/get-with-pagination.interface";
 import {BlogPostInputModel} from "../models/BlogPostInputModel";
 import {PostViewModel} from "../models/Posts/PostViewModel";
-import {PostsRepository} from "../repositories/Posts/posts-repository";
+import {PostsRepository} from "../infrastucture/posts-repository";
 import {PaginatorPosts} from "../models/Posts/Paginator-Posts";
 import {PaginatorBlogs} from "../models/Blogs/Paginator-Blogs";
+import {PostModel} from "../infrastucture/db";
 
 
 export class BlogsService {
@@ -39,27 +40,23 @@ export class BlogsService {
             createdAt: new Date().toISOString(),
             isMembership: false
         }
-        const createdBlog = await this.blogsRepository.createBlog(newBlog)
-        return createdBlog
+        return await this.blogsRepository.createBlog(newBlog)
     }
 
 
     async createPostForBlog(blogId: string, inputModel: BlogPostInputModel): Promise<PostViewModel | null> {
         const blog: BlogViewModel | null = await this.blogsRepository.getBlogByID(blogId);
         if (!blog) return null;
-
-        const newPost: PostViewModel = {
-            id: String(+new Date()),
+        const createDTO = {
             title: inputModel.title,
             shortDescription: inputModel.shortDescription,
             content: inputModel.content,
             blogId: blogId,
-            blogName: blog.name,
-            createdAt: new Date().toISOString()
         }
-        const createdPost = await this.postsRepository.createNewPost(newPost);
-        console.log(createdPost)
-        return createdPost;
+        const newPost = PostModel.createPost(createDTO, blog.name)
+        await this.postsRepository.save(newPost)
+        console.log(newPost)
+        return newPost;
     }
 
 

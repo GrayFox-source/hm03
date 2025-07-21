@@ -1,6 +1,6 @@
 import {body, FieldValidationError, validationResult} from 'express-validator'
 import {NextFunction, Request, Response} from "express";
-import {UsersService} from "../domain/users-service";
+import {UsersService} from "../application/users-service";
 import "reflect-metadata"
 import {container, jwtService} from "../compositon-root";
 
@@ -115,3 +115,21 @@ export const validateEmailFormat = (req: Request, res: Response, next: NextFunct
 
     next();
 };
+
+const validLikeStatuses = ['None', 'Like', 'Dislike'] as const;
+type LikeStatus = typeof validLikeStatuses[number];
+
+function isLikeStatus(value: any): value is LikeStatus {
+    return validLikeStatuses.includes(value);
+}
+
+export async function handleLikeStatus(req: Request, res: Response, next: NextFunction) {
+    const { likeStatus } = req.body;
+
+    if (!isLikeStatus(likeStatus)) {
+        res.status(400).send({ message: 'Invalid likeStatus', field: "likeStatus" });
+        return
+    }
+    next()
+    // дальше безопасно используем likeStatus
+}

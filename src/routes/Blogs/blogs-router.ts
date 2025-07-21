@@ -10,10 +10,10 @@ import {BlogInputModel} from "../../models/Blogs/BlogInputModel";
 import * as validation from "../../middlewares/input-validation-middleware";
 import {inputValidationMiddleware} from "../../middlewares/input-validation-middleware";
 import {BlogViewModel} from "../../models/Blogs/BlogViewModel";
-import {BlogsService} from "../../domain/blogs-service";
+import {BlogsService} from "../../application/blogs-service";
 import {PostViewModel} from "../../models/Posts/PostViewModel";
 import {BlogPostInputModel} from "../../models/BlogPostInputModel";
-import {IGetWithPagination} from "../../repositories/interfaces/get-with-pagination.interface";
+import {IGetWithPagination} from "../../infrastucture/interfaces/get-with-pagination.interface";
 import {PaginatorPosts} from "../../models/Posts/Paginator-Posts";
 
 

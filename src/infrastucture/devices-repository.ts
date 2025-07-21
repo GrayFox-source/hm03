@@ -1,5 +1,5 @@
-import {devicesCollection} from "../db";
-import {DeviceDBModel, DeviceViewModel} from "../../models/Auth/DeviceModel";
+import {devicesCollection} from "./db";
+import {DeviceDBModel, DeviceViewModel} from "../models/Auth/DeviceModel";
 import {injectable} from "inversify";
 
 
@@ -7,9 +7,7 @@ import {injectable} from "inversify";
 export class DevicesRepository {
     async insertDevice(device: DeviceDBModel): Promise<boolean> {
         const insertion = await devicesCollection.insertOne(device)
-        if (!insertion) {
-            return false
-        }
+        if (!insertion) return false
         return true
     }
     async findDevices(userId: string): Promise<DeviceViewModel[]> {
@@ -21,9 +19,7 @@ export class DevicesRepository {
         const deleted = await devicesCollection.deleteMany({userId: deviceDTO.userId,
             deviceId: {$ne: deviceDTO.deviceId}
         })
-        if (deleted.deletedCount > 0) {
-            return true
-        }
+        if (deleted.deletedCount > 0) return true
         return false
     }
 

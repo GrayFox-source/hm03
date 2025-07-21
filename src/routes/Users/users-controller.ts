@@ -1,4 +1,4 @@
-import {UsersService} from "../../domain/users-service";
+import {UsersService} from "../../application/users-service";
 import {Request, Response} from "express";
 import {RequestWithBody, RequestWithParams} from "../../types";
 import {UserInputModel} from "../../models/User/UserInputModel";

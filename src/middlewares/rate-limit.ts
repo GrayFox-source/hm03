@@ -1,6 +1,6 @@
 import {Request, Response, NextFunction} from "express";
 
-import {requestMeta} from "../repositories/db";
+import {requestMeta} from "../infrastucture/db";
 import {jwtService} from "../compositon-root";
 
 export const requestLoggerMiddleware =  async (req: Request, res: Response, next: NextFunction): Promise<void> => {

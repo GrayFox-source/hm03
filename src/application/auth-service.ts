@@ -65,11 +65,11 @@ export class AuthService {
             this.usersService.findUserByLogin(dto.login)
         ]);
         if (findUserByEmail) {
-            errorField.push({error: 'dolbaeb user with this email is already exist', field: dto.email})
+            errorField.push({error: 'Error. User with this email is already exist', field: dto.email})
             return errorField
         }
         if (findUserByLogin) {
-            errorField.push({error: 'dolbaeb user with this login is already exist', field: dto.login})
+            errorField.push({error: 'Error. User with this login is already exist', field: dto.login})
             return errorField
         }
         const newUser = {

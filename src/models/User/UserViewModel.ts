@@ -15,7 +15,15 @@ export class UserDBModel {
                     confirmationCode: string,
                     expirationDate: Date,
                     isConfirmed: boolean,
-                },) {
+                },)
+    {}
+    canBeConfirmed(code: string): boolean {
+        return this.emailConfirmation.confirmationCode === code &&
+            this.emailConfirmation.expirationDate >= new Date();
+    }
+    confirm(): void {
+        if (this.emailConfirmation.isConfirmed) throw new Error('This user is already confirmed')
+        this.emailConfirmation.isConfirmed = true
     }
 }
 

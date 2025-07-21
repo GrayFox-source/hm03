@@ -1,8 +1,8 @@
-import {blogsCollection, postsCollection} from "../db";
-import {BlogViewModel} from "../../models/Blogs/BlogViewModel";
-import {IGetWithPagination} from "../interfaces/get-with-pagination.interface";
-import {PaginatorPosts} from "../../models/Posts/Paginator-Posts";
-import {PaginatorBlogs} from "../../models/Blogs/Paginator-Blogs";
+import {BlogsModel, postsCollection} from "./db";
+import {BlogViewModel} from "../models/Blogs/BlogViewModel";
+import {IGetWithPagination} from "./interfaces/get-with-pagination.interface";
+import {PaginatorPosts} from "../models/Posts/Paginator-Posts";
+import {PaginatorBlogs} from "../models/Blogs/Paginator-Blogs";
 
 
 export class BlogsRepository {
@@ -20,9 +20,9 @@ export class BlogsRepository {
             }
         }
 
-        const totalCount = await blogsCollection.countDocuments(filter)
+        const totalCount = await BlogsModel.countDocuments(filter)
         const pagesCount = Math.ceil(totalCount / pageSize)
-        const items = await blogsCollection.find(filter).sort({[sortBy]: sortDirection === 'asc' ? 1 : -1}).skip((pageNumber - 1) * pageSize).limit(pageSize).toArray()
+        const items = await BlogsModel.find(filter).sort({[sortBy]: sortDirection === 'asc' ? 1 : -1}).skip((pageNumber - 1) * pageSize).limit(pageSize)
 
         return {
             pagesCount,
@@ -33,7 +33,7 @@ export class BlogsRepository {
         };
     }
     async getBlogByID(id: string): Promise<BlogViewModel | null> {
-        const blog: BlogViewModel | null = await blogsCollection.findOne({id: id})
+        const blog: BlogViewModel | null = await BlogsModel.findOne({id: id})
         if (blog) {
             return blog
         } else {
@@ -62,7 +62,7 @@ export class BlogsRepository {
         };
     }
     async createBlog(newBlog: BlogViewModel): Promise<BlogViewModel> {
-        await blogsCollection.insertOne(newBlog)
+        await BlogsModel.insertOne(newBlog)
         return newBlog
     }
     async updateBlogByID(updateBlogDTO: {
@@ -71,7 +71,7 @@ export class BlogsRepository {
         description: string,
         websiteUrl: string
     }): Promise<boolean> {
-        const result = await blogsCollection.updateOne({id: updateBlogDTO.id}, {
+        const result = await BlogsModel.updateOne({id: updateBlogDTO.id}, {
             $set: {
                 name: updateBlogDTO.name,
                 description: updateBlogDTO.description, websiteUrl: updateBlogDTO.websiteUrl
@@ -80,7 +80,7 @@ export class BlogsRepository {
         return result.matchedCount === 1
     }
     async deleteBlogByID(id: string): Promise<boolean> {
-        const result = await blogsCollection.deleteOne({id: id})
+        const result = await BlogsModel.deleteOne({id: id})
         return result.deletedCount === 1
     }
 }

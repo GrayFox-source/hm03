@@ -1,8 +1,8 @@
-import {recoveryCodeCollection, refreshTokensCollection, requestMeta} from "../db";
-import {RefreshTokenDBModel} from "../../models/Auth/TokenModel";
+import {recoveryCodeCollection, refreshTokensCollection, requestMeta} from "./db";
+import {RefreshTokenDBModel} from "../models/Auth/TokenModel";
 import {injectable} from "inversify";
 import "reflect-metadata"
-import {RecoveryCodeDBModel} from "../../models/Auth/PasswordRecoveryMailInputModel";
+import {RecoveryCodeDBModel} from "../models/Auth/PasswordRecoveryMailInputModel";
 
 @injectable()
 export class JwtRepository {
@@ -30,9 +30,7 @@ export class JwtRepository {
     }
     async insertRefreshJwtToken(refreshToken: RefreshTokenDBModel): Promise<boolean> {
         const insertToken = await refreshTokensCollection.insertOne(refreshToken)
-        if (!insertToken.insertedId) {
-            return false
-        }
+        if (!insertToken.insertedId) return false
         return true
     }
     async deleteRefreshToken(token: string) {
@@ -41,17 +39,14 @@ export class JwtRepository {
     }
     async recordRequestMeta(requestMetaDTO: {ip: string, url: string, date: Date}): Promise<boolean> {
         const insertion = await requestMeta.insertOne(requestMetaDTO)
-        if (!insertion.insertedId) {
-            return false
-        }
+        if (!insertion.insertedId) return false
+
         return true
     }
 
     async insertRecoveryCode(recoveryCode: RecoveryCodeDBModel): Promise<boolean> {
         const data = await recoveryCodeCollection.insertOne(recoveryCode)
-        if (data.insertedId) {
-            return true
-        }
+        if (data.insertedId) return true
         return false
     }
 }

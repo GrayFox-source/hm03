@@ -1,16 +1,19 @@
-import {UsersRepository} from "./repositories/Users/users-repository";
-import {UsersService} from "./domain/users-service";
+import {UsersRepository} from "./infrastucture/users-repository";
+import {UsersService} from "./application/users-service";
 import {UsersController} from "./routes/Users/users-controller";
 import {Container} from "inversify";
-import {AuthService} from "./domain/auth-service";
+import {AuthService} from "./application/auth-service";
 
 import {AuthController} from "./routes/Auth/auth-controller";
-import {JwtRepository} from "./repositories/Users/jwt-repository";
-import {JwtService} from "./application/jwt/jwtService";
+import {JwtRepository} from "./infrastucture/jwt-repository";
+import {JwtService} from "./application/jwtService";
 
 import {SecurityDevicesController} from "./routes/SecurityDevices/security-devices-controller";
-import {DevicesService} from "./domain/devices-service";
-import {DevicesRepository} from "./repositories/DevicesSession/devices-repository";
+import {DevicesService} from "./application/devices-service";
+import {DevicesRepository} from "./infrastucture/devices-repository";
+import {CommentsRepository} from "./infrastucture/comments-repository";
+import {CommentsService} from "./application/comments-service";
+import {CommentsController} from "./routes/Comments/comments-controller";
 
 
 // const objects: any[] = []
@@ -44,6 +47,9 @@ container.bind<JwtService>(JwtService).toSelf()
 container.bind<SecurityDevicesController>(SecurityDevicesController).toSelf()
 container.bind<DevicesService>(DevicesService).toSelf()
 container.bind<DevicesRepository>(DevicesRepository).toSelf()
+container.bind<CommentsRepository>(CommentsRepository).toSelf()
+container.bind<CommentsService>(CommentsService).toSelf()
+container.bind<CommentsController>(CommentsController).toSelf()
 
 export const jwtService = container.get(JwtService)
 

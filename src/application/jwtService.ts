@@ -1,8 +1,8 @@
-import {UserDBModel, UserViewModel} from "../../models/User/UserViewModel";
+import {UserDBModel, UserViewModel} from "../models/User/UserViewModel";
 import jwt, {JwtPayload} from "jsonwebtoken"
-import {settings} from "../../settings";
-import {JwtRepository} from "../../repositories/Users/jwt-repository";
-import {RefreshTokenDBModel} from "../../models/Auth/TokenModel";
+import {settings} from "../settings";
+import {JwtRepository} from "../infrastucture/jwt-repository";
+import {RefreshTokenDBModel} from "../models/Auth/TokenModel";
 import {inject, injectable} from "inversify";
 
 @injectable()
@@ -35,12 +35,10 @@ export class JwtService {
         return {refreshToken, expiresAt}
     }
     async verifyUser(refreshToken: string): Promise<string | JwtPayload> {
-        const decoded = jwt.verify(refreshToken, settings.JWT_REFRESH_SECRET)
-        return decoded
+        return jwt.verify(refreshToken, settings.JWT_REFRESH_SECRET)
     }
     async refreshTokenRecord(token: string, userid: string): Promise<RefreshTokenDBModel | null> {
-        const tokenA = await this.jwtRepository.refreshTokenRecord(token, userid)
-        return tokenA
+        return await this.jwtRepository.refreshTokenRecord(token, userid)
     }
     async updateRefreshToken(user: UserDBModel, deviceId: string, oldRefreshToken: string) {
         const refreshToken = jwt.sign({userId: user.id, deviceId: deviceId}, settings.JWT_REFRESH_SECRET, {expiresIn: "20d"})

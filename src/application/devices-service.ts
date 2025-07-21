@@ -1,5 +1,5 @@
 import {DeviceDBModel, DeviceViewModel} from "../models/Auth/DeviceModel";
-import {DevicesRepository} from "../repositories/DevicesSession/devices-repository";
+import {DevicesRepository} from "../infrastucture/devices-repository";
 import {inject, injectable} from "inversify";
 
 

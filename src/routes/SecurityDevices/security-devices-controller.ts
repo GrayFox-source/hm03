@@ -1,5 +1,5 @@
-import {JwtService} from "../../application/jwt/jwtService";
-import {DevicesService} from "../../domain/devices-service";
+import {JwtService} from "../../application/jwtService";
+import {DevicesService} from "../../application/devices-service";
 import {Request, Response} from "express";
 import {JwtPayload} from "jsonwebtoken";
 import {inject, injectable} from "inversify";
